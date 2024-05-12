@@ -49,15 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Container(
           color: Theme.of(context).scaffoldBackgroundColor,
           // Set child element of container to add things
-          child: Center(
-            child: FittedBox(
-              child: SizedBox(
-                child: CustomPaint(
-                  painter: DialPainter(),
-                  size: const Size(300,300),
-                ),
-              ),
-            ),
+          child: const Center(
+            child: CustomDial()
           ),
         ),
       ),
