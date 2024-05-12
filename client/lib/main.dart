@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ColorThemes/themes.dart';
+import 'Widgets/dial_painter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,10 +43,22 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
         centerTitle: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: SafeArea(
         child: Container(
           color: Theme.of(context).scaffoldBackgroundColor,
+          // Set child element of container to add things
+          child: Center(
+            child: FittedBox(
+              child: SizedBox(
+                child: CustomPaint(
+                  painter: DialPainter(),
+                  size: const Size(300,300),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
