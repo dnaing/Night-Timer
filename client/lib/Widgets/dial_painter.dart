@@ -10,17 +10,19 @@ class CustomDial extends StatefulWidget {
 
 class _CustomDialState extends State<CustomDial> {
 
-  int time = 0;
+  int minutes = 0;
   double canvasWidth = 400;
   double canvasHeight = 400;
-  double dialDotCenterX = 200;
-  double dialDotCenterY = 0; // Currenlty hardcoded
-  double dialDotRadius = 72;
-  double dialRadius = 160;
+  late double dialDotCenterX;
+  late double dialDotCenterY;
+  double dialDotRadius = 18;
+  late double dialRadius;
 
   _CustomDialState() {
+    dialRadius = min(canvasWidth, canvasHeight) / 2.5;
     dialDotCenterX = canvasWidth / 2;
     dialDotCenterY = (canvasHeight / 2) - dialRadius;
+    dialDotRadius *= 10;
   }
 
   bool isWithinDialDot(Offset localPosition) {
@@ -31,9 +33,15 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void updateDialDot(DragUpdateDetails details) {
+    // Set dial to local position but only if local position is on dial circumference
+    Offset dialCenter = Offset(canvasWidth / 2, canvasHeight / 2);
+    Offset dialVector = details.localPosition - dialCenter; // This tells a vector (x,y) of how to reach local position from center
+    double distance = dialVector.distance; // This gets the distance between center of dial and our local position
+    Offset normalizedDialVector = dialVector / distance; // Dividing these two normalizes our vector so x and y are both between 0 and 1
+    Offset adjustedDialVector = normalizedDialVector * dialRadius;
     setState(() {
-      dialDotCenterX += details.delta.dx;
-      dialDotCenterY += details.delta.dy;
+      dialDotCenterX = dialCenter.dx + adjustedDialVector.dx;
+      dialDotCenterY = dialCenter.dy + adjustedDialVector.dy;
     });
 
   }
@@ -49,8 +57,8 @@ class _CustomDialState extends State<CustomDial> {
             }   
           },
           child: CustomPaint(
-            painter: DialPainter(time, dialDotCenterX, dialDotCenterY),
-            size: const Size(400,400)
+            painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY),
+            size: Size(canvasWidth, canvasHeight)
           )
         ),
       ),
@@ -61,10 +69,10 @@ class _CustomDialState extends State<CustomDial> {
 
 class DialPainter extends CustomPainter {
 
-  int time;
+  int minutes;
   double dialDotCenterX;
   double dialDotCenterY;
-  DialPainter(this.time, this.dialDotCenterX, this.dialDotCenterY);
+  DialPainter(this.minutes, this.dialDotCenterX, this.dialDotCenterY);
 
   @override
     void paint(Canvas canvas, Size size) {
@@ -101,7 +109,7 @@ class DialPainter extends CustomPainter {
       // Draw text inside the dial
       TextPainter textPainter = TextPainter(
         text: TextSpan(
-          text: time.toString(),
+          text: minutes.toString(),
           style: const TextStyle(
             color: Colors.white,
             fontSize: 80,
