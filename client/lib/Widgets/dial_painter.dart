@@ -13,10 +13,15 @@ class _CustomDialState extends State<CustomDial> {
   int minutes = 0;
   double canvasWidth = 400;
   double canvasHeight = 400;
+
+  double dialDotOriginX = 200;
+  double dialDotOriginY = 40;
   late double dialDotCenterX;
   late double dialDotCenterY;
   double dialDotRadius = 18;
+
   late double dialRadius; 
+
   Set<List<double>> clockIncrements = {};
   int currentTick = 0;
 
@@ -54,8 +59,16 @@ class _CustomDialState extends State<CustomDial> {
 
 
     setState(() {
-      dialDotCenterX = dialCenter.dx + adjustedDialVector.dx;
-      dialDotCenterY = dialCenter.dy + adjustedDialVector.dy;
+      
+      // Dial not allowed to move counterclockwise at <= 0 minutes
+      if (minutes <= 0 && adjustedDialVector.dx < 0) {
+        dialDotCenterX = dialDotOriginX;
+        dialDotCenterY = dialDotOriginY;
+      } else {
+        dialDotCenterX = dialCenter.dx + adjustedDialVector.dx;
+        dialDotCenterY = dialCenter.dy + adjustedDialVector.dy;
+      }
+      
       updateTick(dialDotCenterX, dialDotCenterY, dialCenter.dx, dialCenter.dy);
     });
 
@@ -63,20 +76,25 @@ class _CustomDialState extends State<CustomDial> {
 
   void updateTick(double dialDotCenterX, double dialDotCenterY, double dialCenterX, double dialCenterY) {
       double angleInDegrees = (atan2(dialDotCenterY - dialCenterY, dialDotCenterX - dialCenterX)) * (180 / pi);
-      double normalizedAngle = (angleInDegrees - 270 + 360) % 360;
+      double normalizedAngle = (angleInDegrees - 270) % 360;
+
+
       int newTick = normalizedAngle ~/ 6;
+
       if (newTick != currentTick) {
         if (currentTick == 59 && newTick == 0) {
           minutes += 1;
         } else if (currentTick == 0 && newTick == 59) {
           minutes -= 1;
         } else if (newTick > currentTick) {
-          minutes += 1;
+          minutes += newTick - currentTick;
         } else {
-          minutes -= 1;
+          minutes -= (currentTick - newTick + 60) % 60;
         }
         currentTick = newTick;
+
       }
+
   }
 
   @override
@@ -121,6 +139,7 @@ class DialPainter extends CustomPainter {
       // Offset dialDotCenter = Offset(size.width / 2, (size.height / 2) - radius); // Center of dial dot
       Offset dialDotCenter = Offset(dialDotCenterX, dialDotCenterY);
       Paint myPaint;
+      
 
       // Draw the dial outline
       myPaint = Paint()
