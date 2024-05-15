@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:flutter/services.dart';
+
 class CustomDial extends StatefulWidget {
   const CustomDial({super.key});
 
@@ -69,12 +71,12 @@ class _CustomDialState extends State<CustomDial> {
         dialDotCenterY = dialCenter.dy + adjustedDialVector.dy;
       }
       
-      updateTick(dialDotCenterX, dialDotCenterY, dialCenter.dx, dialCenter.dy);
+      updateTick(dialDotCenterX, dialDotCenterY, dialCenter.dx, dialCenter.dy, adjustedDialVector);
     });
 
   }
 
-  void updateTick(double dialDotCenterX, double dialDotCenterY, double dialCenterX, double dialCenterY) {
+  void updateTick(double dialDotCenterX, double dialDotCenterY, double dialCenterX, double dialCenterY, Offset adjustedDialVector) {
       double angleInDegrees = (atan2(dialDotCenterY - dialCenterY, dialDotCenterX - dialCenterX)) * (180 / pi);
       double normalizedAngle = (angleInDegrees - 270) % 360;
 
@@ -82,15 +84,18 @@ class _CustomDialState extends State<CustomDial> {
       int newTick = normalizedAngle ~/ 6;
 
       if (newTick != currentTick) {
-        if (currentTick == 59 && newTick == 0) {
-          minutes += 1;
-        } else if (currentTick == 0 && newTick == 59) {
-          minutes -= 1;
-        } else if (newTick > currentTick) {
+        print(adjustedDialVector);
+        HapticFeedback.vibrate();
+        if (currentTick == 59 && newTick >= 0 && adjustedDialVector.dx >= 0) { // if dial is about to rotate around and it is clockwise
+          minutes += (60 - currentTick) + newTick;
+        } else if (currentTick == 0 && newTick <= 59 && adjustedDialVector.dx <= 0) { // if dial is about to rotate and it is counterclockwise
+          minutes -= (60 - newTick);
+        } else if (newTick > currentTick) { // increment time
           minutes += newTick - currentTick;
         } else {
-          minutes -= (currentTick - newTick + 60) % 60;
+          minutes -= currentTick - newTick; // decrement time
         }
+        // print(currentTick);
         currentTick = newTick;
 
       }
