@@ -77,8 +77,8 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void updateTick(double dialDotCenterX, double dialDotCenterY, double dialCenterX, double dialCenterY, Offset adjustedDialVector) {
-      double angleInDegrees = (atan2(dialDotCenterY - dialCenterY, dialDotCenterX - dialCenterX)) * (180 / pi);
-      double normalizedAngle = (angleInDegrees - 270) % 360;
+      double angleInDegrees = (atan2(dialDotCenterY - dialCenterY, dialDotCenterX - dialCenterX)) * (180 / pi); // gets angle of dial dot in degrees
+      double normalizedAngle = (angleInDegrees - 270) % 360; // normalized degrees to be in range of 0 to 360
 
 
       int newTick = normalizedAngle ~/ 6;
@@ -144,6 +144,8 @@ class DialPainter extends CustomPainter {
       // Offset dialDotCenter = Offset(size.width / 2, (size.height / 2) - radius); // Center of dial dot
       Offset dialDotCenter = Offset(dialDotCenterX, dialDotCenterY);
       Paint myPaint;
+      TextPainter textPainter;
+      Offset textOffset;
       
 
       // Draw the dial outline
@@ -178,8 +180,8 @@ class DialPainter extends CustomPainter {
 
 
 
-      // Draw text inside the dial
-      TextPainter textPainter = TextPainter(
+      // Draw dial minute value text inside the dial
+      textPainter = TextPainter(
         text: TextSpan(
           text: minutes.toString(),
           style: const TextStyle(
@@ -192,9 +194,25 @@ class DialPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      Offset textOffset = Offset(dialCenter.dx - textPainter.width / 2, dialCenter.dy - textPainter.height / 2);
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, dialCenter.dy - textPainter.height / 2);
       textPainter.paint(canvas, textOffset);
 
+      // Draw 'minute' text inside the dial
+      textPainter = TextPainter(
+        text: const TextSpan(
+          text: 'MINUTES',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 1.5 - textPainter.height / 2);
+      textPainter.paint(canvas, textOffset);
     }
   
   @override
