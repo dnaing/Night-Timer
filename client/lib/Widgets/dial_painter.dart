@@ -1,7 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
 import 'package:flutter/services.dart';
+
+import 'package:intl/intl.dart' as intl;
+
+
 
 class CustomDial extends StatefulWidget {
   const CustomDial({super.key});
@@ -13,6 +18,12 @@ class CustomDial extends StatefulWidget {
 class _CustomDialState extends State<CustomDial> {
 
   int minutes = 0;
+
+  DateTime curTime = DateTime.now();
+  late String formattedTime;
+
+  late Timer timer;
+
   double canvasWidth = 400;
   double canvasHeight = 400;
 
@@ -27,23 +38,29 @@ class _CustomDialState extends State<CustomDial> {
   Set<List<double>> clockIncrements = {};
   int currentTick = 0;
 
+  // Custom Dial Constructor
   _CustomDialState() {
     dialRadius = min(canvasWidth, canvasHeight) / 2.5; // 160
     dialDotCenterX = canvasWidth / 2;
     dialDotCenterY = (canvasHeight / 2) - dialRadius;
     dialDotRadius *= 10;
-    
 
-    double angle = 0;
-    for (int i = 0; i < 60; i++) {
-      List<double> curIncrement = [200 + (dialRadius * cos(angle * (pi / 180))), 200 + (dialRadius * sin(angle * (pi / 180)))];
-      clockIncrements.add(curIncrement);
-      angle += 6;
-    }
+    // DateTime newTime = curTime.add(Duration(minutes: 170));
+    intl.DateFormat formatter = intl.DateFormat('jm');
+    formattedTime = formatter.format(curTime);
+  
+    // Will use this later for adding tick marks to the dial
+    // Leave commented for now
+    // double angle = 0;
+    // for (int i = 0; i < 60; i++) {
+    //   List<double> curIncrement = [200 + (dialRadius * cos(angle * (pi / 180))), 200 + (dialRadius * sin(angle * (pi / 180)))];
+    //   clockIncrements.add(curIncrement);
+    //   angle += 6;
+    // }
+
   }
 
   bool isWithinDialDot(Offset localPosition) {
-
     Offset dialDotCenterPosition = Offset(dialDotCenterX, dialDotCenterY);
     double distance = (localPosition - dialDotCenterPosition).distance;
     return distance <= dialDotRadius;
@@ -57,9 +74,6 @@ class _CustomDialState extends State<CustomDial> {
     Offset normalizedDialVector = dialVector / distance; // Dividing these two normalizes our vector so x and y are both between 0 and 1
     Offset adjustedDialVector = normalizedDialVector * dialRadius;
 
-
-
-
     setState(() {
       
       // Dial not allowed to move counterclockwise at <= 0 minutes
@@ -72,14 +86,14 @@ class _CustomDialState extends State<CustomDial> {
       }
       
       updateTick(dialDotCenterX, dialDotCenterY, dialCenter.dx, dialCenter.dy, adjustedDialVector);
-    });
+      updateTime();
 
+    });
   }
 
   void updateTick(double dialDotCenterX, double dialDotCenterY, double dialCenterX, double dialCenterY, Offset adjustedDialVector) {
       double angleInDegrees = (atan2(dialDotCenterY - dialCenterY, dialDotCenterX - dialCenterX)) * (180 / pi); // gets angle of dial dot in degrees
       double normalizedAngle = (angleInDegrees - 270) % 360; // normalized degrees to be in range of 0 to 360
-
 
       int newTick = normalizedAngle ~/ 6;
 
@@ -97,9 +111,31 @@ class _CustomDialState extends State<CustomDial> {
         }
         // print(currentTick);
         currentTick = newTick;
-
       }
+  }
 
+  void updateTime() {
+    DateTime newTime = curTime.add(Duration(minutes: minutes));
+    intl.DateFormat formatter = intl.DateFormat('jm');
+    formattedTime = formatter.format(newTime);
+  }
+
+  // Whenever time passes in real life, the change is reflected in here.
+  @override
+  void initState() {
+    super.initState();
+
+    // Start a timer to update the time every second
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Check if the current time has changed
+      DateTime now = DateTime.now();
+      if (now != curTime) {
+        setState(() {
+          curTime = now;
+          updateTime();
+        });
+      }
+    });
   }
 
   @override
@@ -107,16 +143,13 @@ class _CustomDialState extends State<CustomDial> {
     return FittedBox(
       child: SizedBox(
         child: GestureDetector(
-          onPanStart: (DragStartDetails details) {
-            // print([details.localPosition.dx, details.localPosition.dy]);
-          },
           onPanUpdate: (DragUpdateDetails details) {
             if (isWithinDialDot(details.localPosition)) {
               updateDialDot(details);
             }   
           },
           child: CustomPaint(
-            painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements),
+            painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime),
             size: Size(canvasWidth, canvasHeight)
           )
         ),
@@ -125,14 +158,15 @@ class _CustomDialState extends State<CustomDial> {
   }
 }
 
-
 class DialPainter extends CustomPainter {
 
   int minutes;
+  String formattedTime;
+  
   double dialDotCenterX;
   double dialDotCenterY;
   Set<List<double>> clockIncrements;
-  DialPainter(this.minutes, this.dialDotCenterX, this.dialDotCenterY, this.clockIncrements);
+  DialPainter(this.minutes, this.dialDotCenterX, this.dialDotCenterY, this.clockIncrements, this.formattedTime);
   
 
   @override
@@ -141,7 +175,6 @@ class DialPainter extends CustomPainter {
       final dialCenter = Offset(size.width / 2, size.height / 2); // Center of dial
       final radius = min(size.width, size.height) / 2.5; // Radius of dial
 
-      // Offset dialDotCenter = Offset(size.width / 2, (size.height / 2) - radius); // Center of dial dot
       Offset dialDotCenter = Offset(dialDotCenterX, dialDotCenterY);
       Paint myPaint;
       TextPainter textPainter;
@@ -178,7 +211,22 @@ class DialPainter extends CustomPainter {
         );
       }
 
-
+      // Draw dial clock time inside the dial
+      textPainter = TextPainter(
+        text: TextSpan(
+          text: formattedTime,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 40,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 3.2 - textPainter.height / 2);
+      textPainter.paint(canvas, textOffset);
 
       // Draw dial minute value text inside the dial
       textPainter = TextPainter(
