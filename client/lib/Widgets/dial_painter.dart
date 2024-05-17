@@ -1,12 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:math';
-
 import 'package:flutter/services.dart';
-
 import 'package:intl/intl.dart' as intl;
+import 'package:ionicons/ionicons.dart';
 
-
+import 'dial_button.dart';
 
 class CustomDial extends StatefulWidget {
   const CustomDial({super.key});
@@ -18,10 +17,10 @@ class CustomDial extends StatefulWidget {
 class _CustomDialState extends State<CustomDial> {
 
   int minutes = 0;
+  int currentTick = 0;
 
   DateTime curTime = DateTime.now();
   late String formattedTime;
-
   late Timer timer;
 
   double canvasWidth = 400;
@@ -32,11 +31,9 @@ class _CustomDialState extends State<CustomDial> {
   late double dialDotCenterX;
   late double dialDotCenterY;
   double dialDotRadius = 18;
-
   late double dialRadius; 
 
   Set<List<double>> clockIncrements = {};
-  int currentTick = 0;
 
   // Custom Dial Constructor
   _CustomDialState() {
@@ -120,6 +117,25 @@ class _CustomDialState extends State<CustomDial> {
     formattedTime = formatter.format(newTime);
   }
 
+  void refreshAction() {
+    setState(() {
+      dialDotCenterX = canvasWidth / 2;
+      dialDotCenterY = (canvasHeight / 2) - dialRadius;
+      currentTick = 0;
+      minutes = 0;
+      updateTime();    
+    });
+
+  }
+
+  void playAction() {
+    print('Play pushed');
+    HapticFeedback.heavyImpact();
+
+  }
+
+
+
   // Whenever time passes in real life, the change is reflected in here.
   @override
   void initState() {
@@ -140,20 +156,26 @@ class _CustomDialState extends State<CustomDial> {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      child: SizedBox(
-        child: GestureDetector(
-          onPanUpdate: (DragUpdateDetails details) {
-            if (isWithinDialDot(details.localPosition)) {
-              updateDialDot(details);
-            }   
-          },
-          child: CustomPaint(
-            painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime),
-            size: Size(canvasWidth, canvasHeight)
-          )
+    return Column(
+      children: [
+        DialButton(buttonSize: 50, icon: Ionicons.refresh_circle, buttonAction: refreshAction),
+        FittedBox(
+          child: SizedBox(
+            child: GestureDetector(
+              onPanUpdate: (DragUpdateDetails details) {
+                if (isWithinDialDot(details.localPosition)) {
+                  updateDialDot(details);
+                }   
+              },
+              child: CustomPaint(
+                painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime),
+                size: Size(canvasWidth, canvasHeight)
+              )
+            ),
+          ),
         ),
-      ),
+        DialButton(buttonSize: 50, icon: Ionicons.play_circle, buttonAction: playAction),
+      ],
     );
   }
 }
