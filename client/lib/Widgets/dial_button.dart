@@ -22,17 +22,6 @@ class DialButton extends StatefulWidget {
 
 class _DialButtonState extends State<DialButton> {
 
-
-  void refreshAction() {
-    print('Refresh pushed');
-  }
-
-  void playAction() {
-    print('Play pushed');
-  }
-  
-
-
   @override
   Widget build(BuildContext context) {
 

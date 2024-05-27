@@ -4,8 +4,11 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 import 'dial_button.dart';
+
+
 
 class CustomDial extends StatefulWidget {
   const CustomDial({super.key});
@@ -16,16 +19,20 @@ class CustomDial extends StatefulWidget {
 
 class _CustomDialState extends State<CustomDial> {
 
+  // Handles dial minutes logic
   int minutes = 0;
   int currentTick = 0;
 
+  // Handles all date time logic
   DateTime curTime = DateTime.now();
   late String formattedTime;
   late Timer timer;
 
+  // Preset canvas sizes
   double canvasWidth = 400;
   double canvasHeight = 400;
 
+  // Handles all dial positions and radius arguments
   double dialDotOriginX = 200;
   double dialDotOriginY = 40;
   late double dialDotCenterX;
@@ -33,7 +40,11 @@ class _CustomDialState extends State<CustomDial> {
   double dialDotRadius = 18;
   late double dialRadius; 
 
+  // Used only if tick marks are to be displayed on the dial
   Set<List<double>> clockIncrements = {};
+
+  // Handles native android audiomanager platform
+  static const platform = MethodChannel('com.example.client/audio');
 
   // Custom Dial Constructor
   _CustomDialState() {
@@ -128,10 +139,13 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
-  void playAction() {
-    print('Play pushed');
+  Future<void> playAction() async {
+    try {
+      await platform.invokeMethod('stopAudio');
+    } on PlatformException catch (e) {
+      print('Failed to stop audio: ${e.message}.');
+    }
     HapticFeedback.heavyImpact();
-
   }
 
 
