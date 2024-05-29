@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
-import 'package:audioplayers/audioplayers.dart';
+// import 'package:audioplayers/audioplayers.dart';
 
 import 'dial_button.dart';
 
@@ -28,6 +28,10 @@ class _CustomDialState extends State<CustomDial> {
   late String formattedTime;
   late Timer timer;
 
+  // Handles count down timer logic
+  late Timer countDownTimer;
+  int minutesAtStart = 0;
+
   // Preset canvas sizes
   double canvasWidth = 400;
   double canvasHeight = 400;
@@ -45,6 +49,12 @@ class _CustomDialState extends State<CustomDial> {
 
   // Handles native android audiomanager platform
   static const platform = MethodChannel('com.example.client/audio');
+
+  // Handles button active states
+  bool refreshButtonActive = true;
+  bool playButtonActive = true;
+  bool pauseButtonActive = false;
+  bool stopButtonActive = false;
 
   // Custom Dial Constructor
   _CustomDialState() {
@@ -139,13 +149,63 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
+  void stopAction() {
+    countDownTimer.cancel();
+    
+    setState(() {
+      minutes = minutesAtStart;
+      refreshButtonActive = true;
+      playButtonActive = true;
+    });
+
+    // Start a timer to update the time every second
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Check if the current time has changed
+      DateTime now = DateTime.now();
+      if (now != curTime) {
+        setState(() {
+          curTime = now;
+          updateTime();
+        });
+      }
+    });
+    
+    // Allow dial moving again
+    // Reshow the play button again
+    // Turn off count down timer
+  }
+
   Future<void> playAction() async {
+
+    Timer(Duration(seconds: minutes), stopAudio);
+    timer.cancel();
+    countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        minutes -= 1;
+      });
+      // updateTime();
+    });
+    setState(() {
+      refreshButtonActive = false;
+      playButtonActive = false;
+    });
+    minutesAtStart = minutes;
+
+    // Disallow dial moving
+    // Show minuts decreasing every minute
+    // Turn the play button into the pause button and stop button
+    
+    HapticFeedback.heavyImpact();
+  }
+
+  void stopAudio() async {
     try {
       await platform.invokeMethod('stopAudio');
     } on PlatformException catch (e) {
       print('Failed to stop audio: ${e.message}.');
     }
-    HapticFeedback.heavyImpact();
+    
+    stopAction();
   }
 
 
@@ -172,7 +232,7 @@ class _CustomDialState extends State<CustomDial> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        DialButton(buttonSize: 50, icon: Ionicons.refresh_circle, buttonAction: refreshAction),
+        DialButton(buttonSize: 50, icon: Ionicons.refresh_circle, buttonAction: refreshAction, buttonActive: refreshButtonActive),
         FittedBox(
           child: SizedBox(
             child: GestureDetector(
@@ -188,7 +248,12 @@ class _CustomDialState extends State<CustomDial> {
             ),
           ),
         ),
-        DialButton(buttonSize: 50, icon: Ionicons.play_circle, buttonAction: playAction),
+        AnimatedOpacity(
+          opacity: playButtonActive ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 250),
+          child: DialButton(buttonSize: 50, icon: Ionicons.play_circle, buttonAction: playAction, buttonActive: playButtonActive),
+        )
+        
       ],
     );
   }

@@ -7,6 +7,7 @@ class DialButton extends StatefulWidget {
   final double buttonSize; // Declare buttonSize as a member variable
   final VoidCallback buttonAction;
   final IconData icon;
+  final bool buttonActive;
 
 
   const DialButton({
@@ -14,6 +15,7 @@ class DialButton extends StatefulWidget {
     required this.buttonSize,
     required this.icon,
     required this.buttonAction,
+    required this.buttonActive,
     }); // Initialize buttonSize through the constructor
 
   @override
@@ -30,7 +32,7 @@ class _DialButtonState extends State<DialButton> {
         color: Colors.white,
         iconSize: widget.buttonSize,
         icon: Icon(widget.icon),
-        onPressed: widget.buttonAction,
+        onPressed: widget.buttonActive ? widget.buttonAction : null,
       ),
     );
 
