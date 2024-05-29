@@ -30,6 +30,7 @@ class _CustomDialState extends State<CustomDial> {
 
   // Handles count down timer logic
   late Timer countDownTimer;
+  late Timer audioStoppingTimer;
   int minutesAtStart = 0;
 
   // Preset canvas sizes
@@ -116,7 +117,7 @@ class _CustomDialState extends State<CustomDial> {
       int newTick = normalizedAngle ~/ 6;
 
       if (newTick != currentTick) {
-        print(adjustedDialVector);
+        // print(adjustedDialVector);
         HapticFeedback.vibrate();
         if (currentTick == 59 && newTick >= 0 && adjustedDialVector.dx >= 0) { // if dial is about to rotate around and it is clockwise
           minutes += (60 - currentTick) + newTick;
@@ -149,26 +150,37 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
+  void pauseAction() {
+    print("Pause button clicked");
+  }
+
   void stopAction() {
-    countDownTimer.cancel();
+    
     
     setState(() {
       minutes = minutesAtStart;
       refreshButtonActive = true;
       playButtonActive = true;
+      pauseButtonActive = false;
+      stopButtonActive = false;
+      countDownTimer.cancel();
+
+      // Start a timer to update the time every second
+      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        // Check if the current time has changed
+        DateTime now = DateTime.now();
+        if (now != curTime) {
+          setState(() {
+            curTime = now;
+            updateTime();
+          });
+        }
+      });
+
+      audioStoppingTimer.cancel();
     });
 
-    // Start a timer to update the time every second
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // Check if the current time has changed
-      DateTime now = DateTime.now();
-      if (now != curTime) {
-        setState(() {
-          curTime = now;
-          updateTime();
-        });
-      }
-    });
+    
     
     // Allow dial moving again
     // Reshow the play button again
@@ -176,20 +188,24 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   Future<void> playAction() async {
-
-    Timer(Duration(seconds: minutes), stopAudio);
-    timer.cancel();
+    print("Play button clicked");
+    audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
     countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         minutes -= 1;
       });
-      // updateTime();
     });
+    
     setState(() {
       refreshButtonActive = false;
       playButtonActive = false;
+      pauseButtonActive = true;
+      stopButtonActive = true;
+      minutesAtStart = minutes;
+      timer.cancel();
+      
     });
-    minutesAtStart = minutes;
+    
 
     // Disallow dial moving
     // Show minuts decreasing every minute
@@ -248,11 +264,36 @@ class _CustomDialState extends State<CustomDial> {
             ),
           ),
         ),
-        AnimatedOpacity(
-          opacity: playButtonActive ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 250),
-          child: DialButton(buttonSize: 50, icon: Ionicons.play_circle, buttonAction: playAction, buttonActive: playButtonActive),
+        Center(
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              IgnorePointer(
+                ignoring: !playButtonActive,
+                child: AnimatedOpacity(
+                  opacity: playButtonActive ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: DialButton(buttonSize: 75, icon: Ionicons.play_circle, buttonAction: playAction, buttonActive: playButtonActive),
+                ),
+              ),
+              IgnorePointer(
+                ignoring: playButtonActive,
+                child: AnimatedOpacity(
+                  opacity: playButtonActive ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DialButton(buttonSize: 75, icon: Ionicons.pause_circle, buttonAction: pauseAction, buttonActive: pauseButtonActive),
+                      DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: stopAction, buttonActive: stopButtonActive),
+                    ]
+                  )
+                ),
+              ),
+            ],
+          )
         )
+        
         
       ],
     );
