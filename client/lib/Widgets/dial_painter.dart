@@ -56,6 +56,7 @@ class _CustomDialState extends State<CustomDial> {
   bool playButtonActive = true;
   bool pauseButtonActive = false;
   bool stopButtonActive = false;
+  bool resumeButtonActive = false;
 
   // Custom Dial Constructor
   _CustomDialState() {
@@ -179,10 +180,13 @@ class _CustomDialState extends State<CustomDial> {
     // Audio stopping timer is stopped
     audioStoppingTimer.cancel();
 
+    setState(() {
+      resumeButtonActive = true;
+    });
+
   }
 
   void stopAction() {
-
     HapticFeedback.heavyImpact();
 
     // Stop minute count down timer
@@ -206,9 +210,7 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
-  Future<void> playAction() async {
-    print("Play button clicked");
-
+  Future<void> playAction(String playActionType) async {
     // Cancel the timer that shows the estimated end time so that it is now static and unchanging
     endEstimationTimer.cancel();
 
@@ -224,8 +226,13 @@ class _CustomDialState extends State<CustomDial> {
     
     // Update which buttons are active and save current minutes 
     setState(() {
-      refreshButtonActive = false;
+      if (playActionType == 'Start') {
+        playButtonActive = false;
+      } else {
+        resumeButtonActive = false;
+      }
       playButtonActive = false;
+      refreshButtonActive = false;
       pauseButtonActive = true;
       stopButtonActive = true;
       minutesAtStart = minutes;
@@ -235,18 +242,14 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void stopAudio() async {
-
     // Stop all audio playing on android device
     try {
       await platform.invokeMethod('stopAudio');
     } on PlatformException catch (e) {
       print('Failed to stop audio: ${e.message}.');
     }
-    
     stopAction();
   }
-
-
 
   // Whenever time passes in real life, the change is reflected in here.
   @override
@@ -284,7 +287,7 @@ class _CustomDialState extends State<CustomDial> {
                 child: AnimatedOpacity(
                   opacity: playButtonActive ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 250),
-                  child: DialButton(buttonSize: 75, icon: Ionicons.play_circle, buttonAction: playAction, buttonActive: playButtonActive),
+                  child: DialButton(buttonSize: 75, icon: Ionicons.play_circle, buttonAction: () => playAction('Start'), buttonActive: playButtonActive),
                 ),
               ),
               IgnorePointer(
