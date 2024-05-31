@@ -26,7 +26,7 @@ class _CustomDialState extends State<CustomDial> {
   // Handles all date time logic
   DateTime curTime = DateTime.now();
   late String formattedTime;
-  late Timer timer;
+  Timer endEstimationTimer = Timer(Duration.zero, () {});
 
   // Handles count down timer logic
   late Timer countDownTimer;
@@ -105,7 +105,7 @@ class _CustomDialState extends State<CustomDial> {
       }
       
       updateTick(dialDotCenterX, dialDotCenterY, dialCenter.dx, dialCenter.dy, adjustedDialVector);
-      updateTime();
+      updateEndTime();
 
     });
   }
@@ -133,10 +133,26 @@ class _CustomDialState extends State<CustomDial> {
       }
   }
 
-  void updateTime() {
+  void updateEndTime() {
     DateTime newTime = curTime.add(Duration(minutes: minutes));
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(newTime);
+  }
+
+  void startEndEstimationTimer() {
+    if (!endEstimationTimer.isActive) {
+      // Start a timer to update the end time estimation every second
+      endEstimationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        // Check if the current time has changed
+        DateTime now = DateTime.now();
+        if (now != curTime) {
+          setState(() {
+            curTime = now;
+            updateEndTime();
+          });
+        }
+      });
+    }
   }
 
   void refreshAction() {
@@ -145,76 +161,82 @@ class _CustomDialState extends State<CustomDial> {
       dialDotCenterY = (canvasHeight / 2) - dialRadius;
       currentTick = 0;
       minutes = 0;
-      updateTime();    
+      updateEndTime();    
     });
 
   }
 
   void pauseAction() {
     print("Pause button clicked");
+    HapticFeedback.heavyImpact();
+
+    // Timer counting down minutes is paused
+    countDownTimer.cancel();
+
+    // Timer keeping track of estimated end time is continued
+    startEndEstimationTimer();
+
+    // Audio stopping timer is stopped
+    audioStoppingTimer.cancel();
+
   }
 
   void stopAction() {
+
+    HapticFeedback.heavyImpact();
+
+    // Stop minute count down timer
+    countDownTimer.cancel();
+
+    // Start a timer to update the end time estimation every second
+    startEndEstimationTimer();
+
+    // Stop the timer that stops audio
+    audioStoppingTimer.cancel();
     
-    
+    // Update minutes back to what it was before the timer started
+    // Update which buttons are active
     setState(() {
       minutes = minutesAtStart;
       refreshButtonActive = true;
       playButtonActive = true;
       pauseButtonActive = false;
       stopButtonActive = false;
-      countDownTimer.cancel();
-
-      // Start a timer to update the time every second
-      timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        // Check if the current time has changed
-        DateTime now = DateTime.now();
-        if (now != curTime) {
-          setState(() {
-            curTime = now;
-            updateTime();
-          });
-        }
-      });
-
-      audioStoppingTimer.cancel();
     });
 
-    
-    
-    // Allow dial moving again
-    // Reshow the play button again
-    // Turn off count down timer
   }
 
   Future<void> playAction() async {
     print("Play button clicked");
+
+    // Cancel the timer that shows the estimated end time so that it is now static and unchanging
+    endEstimationTimer.cancel();
+
+    // Start the timer that would stop audio when completed
     audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
+
+    // Start the timer that counts down the minutes
     countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         minutes -= 1;
       });
     });
     
+    // Update which buttons are active and save current minutes 
     setState(() {
       refreshButtonActive = false;
       playButtonActive = false;
       pauseButtonActive = true;
       stopButtonActive = true;
       minutesAtStart = minutes;
-      timer.cancel();
-      
     });
-    
-
-    // Disallow dial moving
-    // Show minuts decreasing every minute
-    // Turn the play button into the pause button and stop button
     
     HapticFeedback.heavyImpact();
   }
 
   void stopAudio() async {
+
+    // Stop all audio playing on android device
     try {
       await platform.invokeMethod('stopAudio');
     } on PlatformException catch (e) {
@@ -230,18 +252,7 @@ class _CustomDialState extends State<CustomDial> {
   @override
   void initState() {
     super.initState();
-
-    // Start a timer to update the time every second
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // Check if the current time has changed
-      DateTime now = DateTime.now();
-      if (now != curTime) {
-        setState(() {
-          curTime = now;
-          updateTime();
-        });
-      }
-    });
+    startEndEstimationTimer();
   }
 
   @override
