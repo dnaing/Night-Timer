@@ -157,6 +157,8 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void refreshAction() {
+
+    HapticFeedback.heavyImpact;
     setState(() {
       dialDotCenterX = canvasWidth / 2;
       dialDotCenterY = (canvasHeight / 2) - dialRadius;
@@ -168,7 +170,7 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void pauseAction() {
-    print("Pause button clicked");
+    // print("Pause button clicked");
     HapticFeedback.heavyImpact();
 
     // Timer counting down minutes is paused
@@ -206,11 +208,15 @@ class _CustomDialState extends State<CustomDial> {
       playButtonActive = true;
       pauseButtonActive = false;
       stopButtonActive = false;
+      resumeButtonActive = false;
     });
 
   }
 
   Future<void> playAction(String playActionType) async {
+
+    HapticFeedback.heavyImpact();
+
     // Cancel the timer that shows the estimated end time so that it is now static and unchanging
     endEstimationTimer.cancel();
 
@@ -228,17 +234,18 @@ class _CustomDialState extends State<CustomDial> {
     setState(() {
       if (playActionType == 'Start') {
         playButtonActive = false;
+        minutesAtStart = minutes;
       } else {
         resumeButtonActive = false;
       }
-      playButtonActive = false;
+      // playButtonActive = false;
       refreshButtonActive = false;
       pauseButtonActive = true;
       stopButtonActive = true;
-      minutesAtStart = minutes;
+      
     });
     
-    HapticFeedback.heavyImpact();
+    
   }
 
   void stopAudio() async {
@@ -298,7 +305,7 @@ class _CustomDialState extends State<CustomDial> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      DialButton(buttonSize: 75, icon: Ionicons.pause_circle, buttonAction: pauseAction, buttonActive: pauseButtonActive),
+                      DialButton(buttonSize: 75, icon: resumeButtonActive ? Ionicons.play_circle : Ionicons.pause_circle, buttonAction: resumeButtonActive ? () => playAction('Resume') : pauseAction, buttonActive: stopButtonActive),
                       DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: stopAction, buttonActive: stopButtonActive),
                     ]
                   )
