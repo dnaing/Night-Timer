@@ -158,7 +158,7 @@ class _CustomDialState extends State<CustomDial> {
 
   void refreshAction() {
 
-    HapticFeedback.heavyImpact;
+    HapticFeedback.heavyImpact();
     setState(() {
       dialDotCenterX = canvasWidth / 2;
       dialDotCenterY = (canvasHeight / 2) - dialRadius;
