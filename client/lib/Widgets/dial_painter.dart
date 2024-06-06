@@ -269,7 +269,12 @@ class _CustomDialState extends State<CustomDial> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        const SizedBox(
+          height: 75,
+        ),
+
         DialButton(buttonSize: 50, icon: Ionicons.refresh_circle, buttonAction: refreshAction, buttonActive: refreshButtonActive),
+        
         FittedBox(
           child: SizedBox(
             child: GestureDetector(
@@ -279,7 +284,7 @@ class _CustomDialState extends State<CustomDial> {
                 }   
               },
               child: CustomPaint(
-                painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime),
+                painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime, playButtonActive),
                 size: Size(canvasWidth, canvasHeight)
               )
             ),
@@ -329,7 +334,10 @@ class DialPainter extends CustomPainter {
   double dialDotCenterX;
   double dialDotCenterY;
   Set<List<double>> clockIncrements;
-  DialPainter(this.minutes, this.dialDotCenterX, this.dialDotCenterY, this.clockIncrements, this.formattedTime);
+
+  bool playButtonActive;
+
+  DialPainter(this.minutes, this.dialDotCenterX, this.dialDotCenterY, this.clockIncrements, this.formattedTime, this.playButtonActive);
   
 
   @override
@@ -343,36 +351,38 @@ class DialPainter extends CustomPainter {
       TextPainter textPainter;
       Offset textOffset;
       
-
-      // Draw the dial outline
-      myPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 7;
-      canvas.drawCircle(
-        dialCenter, 
-        radius, 
-        myPaint
-      );
-
-      // Draw the dial controller dot
-      myPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill
-        ..strokeWidth = 5;
-      canvas.drawCircle(
-        dialDotCenter,
-        18,
-        myPaint
-      );
-
-      for (final increment in clockIncrements) {
+      if (playButtonActive) {
+        // Draw the dial outline
+        myPaint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7;
         canvas.drawCircle(
-          Offset(increment.elementAt(0), increment.elementAt(1)),
-          5,
+          dialCenter, 
+          radius, 
           myPaint
         );
+
+        // Draw the dial controller dot
+        myPaint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill
+          ..strokeWidth = 5;
+        canvas.drawCircle(
+          dialDotCenter,
+          18,
+          myPaint
+        );
+
+        for (final increment in clockIncrements) {
+          canvas.drawCircle(
+            Offset(increment.elementAt(0), increment.elementAt(1)),
+            5,
+            myPaint
+          );
+        }
       }
+
 
       // Draw dial clock time inside the dial
       textPainter = TextPainter(
