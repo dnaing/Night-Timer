@@ -281,13 +281,11 @@ class _CustomDialState extends State<CustomDial> {
                   updateDialDot(details);
                 }   
               },
-              child: CustomPaint(
-                painter: DialPainter(minutes, dialDotCenterX, dialDotCenterY, clockIncrements, formattedTime, playButtonActive),
-                size: Size(canvasWidth, canvasHeight)
-              )
+              child: DialPainterMain(minutes: minutes, dialDotCenterX: dialDotCenterX, dialDotCenterY: dialDotCenterY, clockIncrements: clockIncrements, formattedTime: formattedTime, playButtonActive: playButtonActive, canvasHeight: canvasHeight, canvasWidth: canvasWidth)
             ),
           ),
         ),
+        
         Center(
           child: Stack(
             alignment: Alignment.center,
