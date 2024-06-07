@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'ColorThemes/themes.dart';
-import 'Widgets/dial_painter.dart';
+import 'Widgets/Dial/dial_widget.dart';
 
 void main() {
   runApp(const MyApp());
