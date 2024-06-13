@@ -94,7 +94,7 @@ class _CustomDialState extends State<CustomDial> {
   bool isWithinDialDot(Offset localPosition) {
     Offset dialDotCenterPosition = Offset(dialDotCenterX, dialDotCenterY);
     double distance = (localPosition - dialDotCenterPosition).distance;
-    return distance <= dialDotRadius;
+    return playButtonActive && (distance <= dialDotRadius);
   }
 
   void updateDialDot(DragUpdateDetails details) {
@@ -271,7 +271,18 @@ class _CustomDialState extends State<CustomDial> {
           height: 75,
         ),
 
-        DialButton(buttonSize: 50, icon: Ionicons.refresh_circle, buttonAction: refreshAction, buttonActive: refreshButtonActive),
+        Visibility(
+          visible: refreshButtonActive,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: DialButton(
+            buttonSize: 50, 
+            icon: Ionicons.refresh_circle, 
+            buttonAction: refreshAction, 
+            buttonActive: refreshButtonActive
+          )
+        ),
         
         FittedBox(
           child: SizedBox(
