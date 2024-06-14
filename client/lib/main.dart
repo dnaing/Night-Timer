@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(
           widget.title,
           style: const TextStyle(
-            fontSize: 30,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
           color: Theme.of(context).scaffoldBackgroundColor,
           // Set child element of container to add things
           child: const Center(
-            child: CustomDial()
+              child: CustomDial()
           ),
         ),
       ),

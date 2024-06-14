@@ -268,7 +268,7 @@ class _CustomDialState extends State<CustomDial> {
     return Column(
       children: [
         const SizedBox(
-          height: 75,
+          height: 60,
         ),
 
         Visibility(
