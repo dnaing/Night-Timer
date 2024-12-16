@@ -47,7 +47,7 @@ class _CustomDialState extends State<CustomDial> {
   Set<List<double>> clockIncrements = {};
 
   // Handles native android audiomanager platform
-  static const platform = MethodChannel('com.example.client/audio');
+  static const platform = MethodChannel('com.example.client/platform_methods');
 
   // Handles button active states
   bool refreshButtonActive = true;
@@ -208,12 +208,17 @@ class _CustomDialState extends State<CustomDial> {
     // Start the timer that would stop audio when completed
     audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
 
-    // Start the timer that counts down the minutes
+    // Start the timer running in the foreground
+    // This is the flutter timer
     countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         minutes -= 1;
       });
     });
+
+    // Start timer running in the background
+    // This is the android native timer
+    startBackgroundTimer();
     
     // Update which buttons are active and save current minutes 
     setState(() {
@@ -261,6 +266,17 @@ class _CustomDialState extends State<CustomDial> {
       print('Failed to stop audio: ${e.message}.');
     }
     stopAction();
+  }
+
+  Future<void> startBackgroundTimer() async {
+
+    try {
+      await platform.invokeMethod('showNotification', {'durationInSeconds': minutes.toString()});
+
+    } on PlatformException catch(e) {
+      print('Failed to start background timer: ${e.message}.'); 
+    }
+
   }
 
   @override

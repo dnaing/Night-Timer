@@ -26,20 +26,21 @@ import android.widget.Toast
 class MainActivity: FlutterActivity() {
 
 
+  // val notificationTitle = call.argument<String>("durationInSeconds")
+  // val notificationDescription = "Default description"
+  private var notificationTitle: String = ""
+  private var notificationDescription: String = ""
+
   override fun onCreate(savedInstanceState: android.os.Bundle?) {
     super.onCreate(savedInstanceState)
+
+    // Notification channel is created when the app is started
     createNotificationChannel()
-    requestNotificationPermission()
   }
 
-  
+  // This function sets up the method channels that the Flutter application will be calling
 
-
-
-  // This below code is called when the com.example.client/audio channel is called by the application
-  // It stops all audio on all other audio sources
-
-  private val CHANNEL = "com.example.client/audio"
+  private val CHANNEL = "com.example.client/platform_methods"
   override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
@@ -53,6 +54,20 @@ class MainActivity: FlutterActivity() {
             result.error("ERROR_AUDIO_STOP", "Audio was not able to be stopped", null)
         }
         
+      } else if (call.method == "showNotification") {
+
+        
+        notificationTitle = call.argument<String>("durationInSeconds") ?: "Default Title"
+        notificationDescription = "Default description"
+
+      
+        if (isNotificationPermissionsGranted()) {
+          createNotification(notificationTitle, notificationDescription)
+          result.success("Notification successfully posted")
+        } else {
+          requestNotificationPermissions()
+        }
+
       } else {
         result.notImplemented()
       }
@@ -102,30 +117,11 @@ class MainActivity: FlutterActivity() {
     const val NOTIFICATION_ID = 1
   }
 
-  private fun requestNotificationPermission() {
-    // Check if permission is granted
-    if (ActivityCompat.checkSelfPermission(
-            this@MainActivity,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        // If not granted, request the permission
-        ActivityCompat.requestPermissions(
-            this@MainActivity,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-            1   // request code
-        )
-    } else {
-        // If permission is already granted, create the notification
-        createNotification()
-    }
-  }
-
-  private fun createNotification() {
+  private fun createNotification(notificationTitle: String, notificationDescription: String) {
     var builder = NotificationCompat.Builder(this, CHANNEL_ID)
         .setSmallIcon(R.drawable.duration)
-        .setContentTitle("test title")
-        .setContentText("test content")
+        .setContentTitle(notificationTitle)
+        .setContentText(notificationDescription)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setOngoing(true) // This keeps the notification in the status bar
       
@@ -133,6 +129,28 @@ class MainActivity: FlutterActivity() {
       // notificationId is a unique int for each notification that you must define.
       notify(NOTIFICATION_ID, builder.build())
     }
+  }
+
+  private fun isNotificationPermissionsGranted(): Boolean {
+    // Check if permission is granted
+    if (ActivityCompat.checkSelfPermission(
+            this@MainActivity,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        return true
+    // but otherwise, if permission isn't granted
+    } else {
+        return false
+    }    
+  }
+
+  private fun requestNotificationPermissions() {
+    ActivityCompat.requestPermissions(
+      this@MainActivity,
+      arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+      1   // request code
+    )
   }
 
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -143,11 +161,16 @@ class MainActivity: FlutterActivity() {
         // If the permission is granted, grantResults[0] will be PackageManager.PERMISSION_GRANTED
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Permission was granted, you can proceed with creating the notification
-            createNotification()
+            createNotification(notificationTitle, notificationDescription)
+            // result.success("Notification successfully posted after permissions granted")
         } else {
             // Permission was denied, handle accordingly (e.g., show a message to the user)
             Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            // result.error("PERMISSION_DENIED", "Notification permissions denied", null)
         }
+
+        notificationTitle = ""
+        notificationDescription = ""
     }
   }
 

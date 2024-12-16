@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../Widgets/Dial/dial_widget.dart';
+import 'package:flutter/services.dart';
 
 
 class MyHomePage extends StatefulWidget {
@@ -11,7 +12,19 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+
+
 class _MyHomePageState extends State<MyHomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Lock orientation to portrait mode
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
