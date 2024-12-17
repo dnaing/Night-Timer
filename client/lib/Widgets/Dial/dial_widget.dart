@@ -240,6 +240,9 @@ class _CustomDialState extends State<CustomDial> {
     // Stop minute count down timer
     countDownTimer.cancel();
 
+    // Close notification on android side and stopBackgroundTimer
+    stopBackgroundTimer();
+
     // Start a timer to update the end time estimation every second
     startEndEstimationTimer();
 
@@ -269,14 +272,20 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   Future<void> startBackgroundTimer() async {
-
     try {
-      await platform.invokeMethod('showNotification', {'durationInSeconds': minutes.toString()});
+      await platform.invokeMethod('startBackgroundTimer', {'durationInSeconds': minutes.toString()});
 
     } on PlatformException catch(e) {
       print('Failed to start background timer: ${e.message}.'); 
     }
+  }
 
+  Future<void> stopBackgroundTimer() async {
+    try {
+      await platform.invokeMethod('stopBackgroundTimer');
+    } on PlatformException catch(e) {
+      print('Failed to stop background timer: ${e.message}.');
+    }
   }
 
   @override

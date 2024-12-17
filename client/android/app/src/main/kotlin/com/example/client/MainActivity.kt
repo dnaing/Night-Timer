@@ -20,7 +20,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
 
-
+import android.os.CountDownTimer
 
 
 class MainActivity: FlutterActivity() {
@@ -30,6 +30,7 @@ class MainActivity: FlutterActivity() {
   // val notificationDescription = "Default description"
   private var notificationTitle: String = ""
   private var notificationDescription: String = ""
+  private var countdownTimer: CountDownTimer? = null // Store the timer reference
 
   override fun onCreate(savedInstanceState: android.os.Bundle?) {
     super.onCreate(savedInstanceState)
@@ -54,21 +55,24 @@ class MainActivity: FlutterActivity() {
             result.error("ERROR_AUDIO_STOP", "Audio was not able to be stopped", null)
         }
         
-      } else if (call.method == "showNotification") {
+      } else if (call.method == "startBackgroundTimer") {
 
-        
+        // Start a timer in the background using the Android API
+        // This timer would keep our notification constantly updated
+
         notificationTitle = call.argument<String>("durationInSeconds") ?: "Default Title"
         notificationDescription = "Default description"
 
-      
         if (isNotificationPermissionsGranted()) {
-          createNotification(notificationTitle, notificationDescription)
+          createNotification((notificationTitle.toLong() + 1).toString(), notificationDescription)
           result.success("Notification successfully posted")
         } else {
           requestNotificationPermissions()
         }
-
-      } else {
+      } else if (call.method == "stopBackgroundTimer") {
+        stopNotification()
+      }
+      else {
         result.notImplemented()
       }
     }
@@ -117,18 +121,59 @@ class MainActivity: FlutterActivity() {
     const val NOTIFICATION_ID = 1
   }
 
-  private fun createNotification(notificationTitle: String, notificationDescription: String) {
-    var builder = NotificationCompat.Builder(this, CHANNEL_ID)
-        .setSmallIcon(R.drawable.duration)
-        .setContentTitle(notificationTitle)
-        .setContentText(notificationDescription)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setOngoing(true) // This keeps the notification in the status bar
-      
+  private fun createNotification(initialTime: String, notificationDescription: String) {
+    // Use the Context properly
+    val context = this
+
+    countdownTimer = object : CountDownTimer(initialTime.toLong() * 1000L, 1000L) { // Convert seconds to milliseconds
+      var timeLeft = initialTime.toLong()
+
+      override fun onTick(millisUntilFinished: Long) {
+        // Decrement timeLeft
+        timeLeft--
+
+        // Build and update the notification
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+          .setSmallIcon(R.drawable.duration) // Replace with your app's icon
+          .setContentTitle("Time Left: $timeLeft seconds")
+          .setContentText(notificationDescription)
+          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+          .setOngoing(true) // Keeps the notification persistent
+
+        with(NotificationManagerCompat.from(context)) {
+          notify(NOTIFICATION_ID, builder.build())
+        }
+      }
+
+      override fun onFinish() {
+        // Notify completion
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+          .setSmallIcon(R.drawable.duration) // Replace with your app's icon
+          .setContentTitle("Timer Finished")
+          .setContentText(notificationDescription)
+          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+          .setOngoing(false) // Timer is finished, make the notification dismissible
+
+        with(NotificationManagerCompat.from(context)) {
+          notify(NOTIFICATION_ID, builder.build())
+        }
+      stopNotification()
+      }
+    }
+
+    // Start the countdown timer
+    countdownTimer?.start()
+  }
+
+  private fun stopNotification() {
+
     with(NotificationManagerCompat.from(this)) {
       // notificationId is a unique int for each notification that you must define.
-      notify(NOTIFICATION_ID, builder.build())
+      cancel(NOTIFICATION_ID)
     }
+
+    countdownTimer?.cancel()
+    countdownTimer = null
   }
 
   private fun isNotificationPermissionsGranted(): Boolean {
