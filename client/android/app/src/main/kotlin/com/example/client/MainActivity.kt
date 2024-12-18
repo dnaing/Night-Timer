@@ -60,17 +60,17 @@ class MainActivity: FlutterActivity() {
         // Start a timer in the background using the Android API
         // This timer would keep our notification constantly updated
 
-        notificationTitle = call.argument<String>("durationInSeconds") ?: "Default Title"
-        notificationDescription = "Default description"
+        notificationTitle = "Night Timer"
+        notificationDescription = call.argument<String>("durationInSeconds") ?: ""
 
         if (isNotificationPermissionsGranted()) {
-          createNotification((notificationTitle.toLong() + 1).toString(), notificationDescription)
+          createNotification(notificationTitle, notificationDescription)
           result.success("Notification successfully posted")
         } else {
           requestNotificationPermissions()
         }
       } else if (call.method == "stopBackgroundTimer") {
-        stopNotification()
+        closeNotification()
       }
       else {
         result.notImplemented()
@@ -121,43 +121,22 @@ class MainActivity: FlutterActivity() {
     const val NOTIFICATION_ID = 1
   }
 
-  private fun createNotification(initialTime: String, notificationDescription: String) {
+  private fun createNotification(notificationTitle: String, notificationDescription: String) {
     // Use the Context properly
     val context = this
 
-    countdownTimer = object : CountDownTimer(initialTime.toLong() * 1000L, 1000L) { // Convert seconds to milliseconds
-      var timeLeft = initialTime.toLong()
+    countdownTimer = object : CountDownTimer(notificationDescription.toLong() * 1000L, 1000L) { // Convert seconds to milliseconds
+      var timeLeft = notificationDescription.toLong()
 
       override fun onTick(millisUntilFinished: Long) {
         // Decrement timeLeft
+        buildNotification(notificationTitle, timeLeft.toString())
         timeLeft--
-
-        // Build and update the notification
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-          .setSmallIcon(R.drawable.duration) // Replace with your app's icon
-          .setContentTitle("Time Left: $timeLeft seconds")
-          .setContentText(notificationDescription)
-          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-          .setOngoing(true) // Keeps the notification persistent
-
-        with(NotificationManagerCompat.from(context)) {
-          notify(NOTIFICATION_ID, builder.build())
-        }
       }
 
       override fun onFinish() {
-        // Notify completion
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-          .setSmallIcon(R.drawable.duration) // Replace with your app's icon
-          .setContentTitle("Timer Finished")
-          .setContentText(notificationDescription)
-          .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-          .setOngoing(false) // Timer is finished, make the notification dismissible
-
-        with(NotificationManagerCompat.from(context)) {
-          notify(NOTIFICATION_ID, builder.build())
-        }
-      stopNotification()
+        // Notify completion 
+        closeNotification()
       }
     }
 
@@ -165,7 +144,21 @@ class MainActivity: FlutterActivity() {
     countdownTimer?.start()
   }
 
-  private fun stopNotification() {
+  private fun buildNotification(notificationTitle: String, notificationDescription: String) {
+    // Build and update the notification
+    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+      .setSmallIcon(R.drawable.duration) // Replace with your app's icon
+      .setContentTitle(notificationTitle)
+      .setContentText("Time Remaining: $notificationDescription seconds")
+      .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+      .setOngoing(true) // Keeps the notification persistent
+
+    with(NotificationManagerCompat.from(context)) {
+      notify(NOTIFICATION_ID, builder.build())
+    }
+  }
+
+  private fun closeNotification() {
 
     with(NotificationManagerCompat.from(this)) {
       // notificationId is a unique int for each notification that you must define.
