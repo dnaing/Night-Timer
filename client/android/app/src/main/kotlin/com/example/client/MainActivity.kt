@@ -1,5 +1,8 @@
 package com.example.client
 
+import com.example.client.NotificationReceiver
+import com.example.client.Audio
+
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -21,6 +24,9 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 
 import android.os.CountDownTimer
+
+import android.app.PendingIntent
+import android.content.Intent
 
 
 class MainActivity: FlutterActivity() {
@@ -48,7 +54,7 @@ class MainActivity: FlutterActivity() {
       // This method is invoked on the main thread.
       call, result ->
       if (call.method == "stopAudio") {
-        val success = stopAudio()
+        val success = Audio.stopAudio(context)
         if (success) {
             result.success("All audio has been stopped")
         } else {
@@ -78,24 +84,6 @@ class MainActivity: FlutterActivity() {
     }
   }
 
-  // This function is the one that actually stops the audio
-  private fun stopAudio(): Boolean {
-    try {
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        
-        val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .build()
-
-
-        val audioRequest = audioManager.requestAudioFocus(focusRequest)
-
-
-        return audioRequest == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    } catch (e: Exception) {
-        e.printStackTrace()
-    } 
-    return false
-  }
 
   private fun createNotificationChannel() {
     // Create the NotificationChannel, but only on API 26+ because
@@ -145,20 +133,36 @@ class MainActivity: FlutterActivity() {
   }
 
   private fun buildNotification(notificationTitle: String, notificationDescription: String) {
+
+    val ACTION_CLOSE = "close"
+
+    val closeIntent = Intent(this, NotificationReceiver::class.java).apply {
+      action = ACTION_CLOSE
+    }
+    val flag =
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+          PendingIntent.FLAG_IMMUTABLE
+      else
+          0
+    val closePendingIntent: PendingIntent =
+      PendingIntent.getBroadcast(this, 0, closeIntent, flag)
+
     // Build and update the notification
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
       .setSmallIcon(R.drawable.duration) // Replace with your app's icon
-      .setContentTitle(notificationTitle)
-      .setContentText("Time Remaining: $notificationDescription seconds")
+      // .setContentTitle(notificationTitle)
+      .setContentText("$notificationDescription seconds remaining")
       .setPriority(NotificationCompat.PRIORITY_DEFAULT)
       .setOngoing(true) // Keeps the notification persistent
-
+      .addAction(R.drawable.duration, "Close",
+                closePendingIntent)
+    
     with(NotificationManagerCompat.from(context)) {
       notify(NOTIFICATION_ID, builder.build())
     }
   }
 
-  private fun closeNotification() {
+  fun closeNotification() {
 
     with(NotificationManagerCompat.from(this)) {
       // notificationId is a unique int for each notification that you must define.
