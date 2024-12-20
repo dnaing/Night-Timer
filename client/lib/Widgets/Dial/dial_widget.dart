@@ -273,7 +273,7 @@ class _CustomDialState extends State<CustomDial> {
 
   Future<void> startBackgroundTimer() async {
     try {
-      await platform.invokeMethod('startBackgroundTimer', {'durationInSeconds': minutes.toString()});
+      await platform.invokeMethod('startBackgroundTimer', {'duration': minutes.toString()});
 
     } on PlatformException catch(e) {
       print('Failed to start background timer: ${e.message}.'); 
