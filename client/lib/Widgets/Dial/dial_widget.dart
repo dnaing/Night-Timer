@@ -180,24 +180,6 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
-  void pauseAction() {
-    // print("Pause button clicked");
-    HapticFeedback.heavyImpact();
-
-    // Timer counting down minutes is paused
-    countDownTimer.cancel();
-
-    // Timer keeping track of estimated end time is continued
-    startEndEstimationTimer();
-
-    // Audio stopping timer is stopped
-    audioStoppingTimer.cancel();
-
-    setState(() {
-      resumeButtonActive = true;
-    });
-  }
-
   Future<void> playAction(String playActionType) async {
 
     HapticFeedback.heavyImpact();
@@ -339,22 +321,13 @@ class _CustomDialState extends State<CustomDial> {
                 child: AnimatedOpacity(
                   opacity: playButtonActive ? 0.0 : 1.0,
                   duration: const Duration(milliseconds: 250),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      DialButton(buttonSize: 75, icon: resumeButtonActive ? Ionicons.play_circle : Ionicons.pause_circle, buttonAction: resumeButtonActive ? () => playAction('Resume') : pauseAction, buttonActive: stopButtonActive),
-                      DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: stopAction, buttonActive: stopButtonActive),
-                    ]
-                  )
+                  child: DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: stopAction, buttonActive: stopButtonActive),
                 ),
               ),
-            ],
-          )
-        )
-        
-        
+            ]      
+          ),
+        ),
       ],
     );
   }
 }
-
