@@ -13,12 +13,15 @@ import android.Manifest
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
 import android.widget.Toast
+import android.util.Log
 
 object Notification {
 
     private var countdownTimer: CountDownTimer? = null
     private const val CHANNEL_ID = "default_channel_id"
     private const val NOTIFICATION_ID = 1
+
+    
 
 
     fun createNotificationChannel(context: Context) {
@@ -80,18 +83,22 @@ object Notification {
 
     private fun buildNotification(context: Context, duration: String) {
 
-        // val ACTION_CLOSE = "close"
+        val ACTION_CLOSE = "close"
 
-        // val closeIntent = Intent(this, NotificationReceiver::class.java).apply {
-        //   action = ACTION_CLOSE
-        // }
-        // val flag =
-        //   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        //       PendingIntent.FLAG_IMMUTABLE
-        //   else
-        //       0
-        // val closePendingIntent: PendingIntent =
-        //   PendingIntent.getBroadcast(this, 0, closeIntent, flag)
+        val closeIntent = Intent(context, NotificationService::class.java).apply {
+          action = ACTION_CLOSE
+        }
+        val flag =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+              PendingIntent.FLAG_IMMUTABLE
+          else
+              0
+        val closePendingIntent = PendingIntent.getService(
+            context,
+            0,
+            closeIntent,
+            flag
+        )
 
         // Build and update the notification
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -100,8 +107,7 @@ object Notification {
         .setContentText("$duration seconds remaining")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setOngoing(true) // Keeps the notification persistent
-        // .addAction(R.drawable.duration, "Close",
-        //           closePendingIntent)
+        .addAction(R.drawable.duration, "Close", closePendingIntent)
         
         with(NotificationManagerCompat.from(context)) {
             notify(NOTIFICATION_ID, builder.build())
@@ -117,6 +123,13 @@ object Notification {
 
         countdownTimer?.cancel()
         countdownTimer = null
+    }
+
+  
+    fun handleIntent(context: Context, intent: Intent?) {
+        when (intent?.action) {
+            "close" -> closeNotification(context)
+        }
     }
 
 }
