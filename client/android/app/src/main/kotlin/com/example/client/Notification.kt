@@ -1,5 +1,7 @@
 package com.example.client
 
+import com.example.client.Audio
+
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -20,9 +22,8 @@ object Notification {
     private var countdownTimer: CountDownTimer? = null
     private const val CHANNEL_ID = "default_channel_id"
     private const val NOTIFICATION_ID = 1
-
-    
-
+    private var timeLeft = 0L
+    private var timeAugmentAmount = 6L
 
     fun createNotificationChannel(context: Context) {
 
@@ -43,7 +44,6 @@ object Notification {
         }
     }
 
-    
     fun isNotificationPermissionsGranted(context: Context): Boolean {
         // Check if permission is granted
         return ActivityCompat.checkSelfPermission(
@@ -60,20 +60,26 @@ object Notification {
         )
     }
 
-    fun createNotification(context: Context, duration: String) {
-        
-        countdownTimer = object : CountDownTimer(duration.toLong() * 1000L, 1000L) { // Convert seconds to milliseconds
-            var timeLeft = duration.toLong()
+    fun updateTimer(context: Context, duration: String) {
 
+        // Cancel current CountDownTimer if it exists
+        countdownTimer?.cancel()
+
+        // Create a new CountDownTimer with the updated timeLeft
+        timeLeft = duration.toLong()
+        countdownTimer = object : CountDownTimer(timeLeft * 1000L, 1000L) {
             override fun onTick(millisUntilFinished: Long) {
-                // Decrement timeLeft
-                buildNotification(context, timeLeft.toString())
+                // Use millisUntilFinished instead of manually decrementing timeLeft
+                
+                buildNotification(context, timeLeft.toString()) // Update the notification
                 timeLeft--
             }
 
             override fun onFinish() {
-                // Notify completion 
+                // Notify completion and clear the notification
                 closeNotification(context)
+                // Stop all audio on android side if the flutter application is currently closed
+                Audio.stopAudio(context)
             }
         }
 
@@ -84,21 +90,34 @@ object Notification {
     private fun buildNotification(context: Context, duration: String) {
 
         val ACTION_CLOSE = "close"
+        val ACTION_INCREMENT = "increment"
+        val ACTION_DECREMENT = "decrement"
 
-        val closeIntent = Intent(context, NotificationService::class.java).apply {
-          action = ACTION_CLOSE
-        }
         val flag =
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
               PendingIntent.FLAG_IMMUTABLE
           else
               0
-        val closePendingIntent = PendingIntent.getService(
-            context,
-            0,
-            closeIntent,
-            flag
-        )
+
+        // Close Intent
+        val closeIntent = Intent(context, NotificationService::class.java).apply {
+          action = ACTION_CLOSE
+        }
+        val closePendingIntent = PendingIntent.getService(context, 0, closeIntent, flag)
+
+        // Increment Intent
+        val incrementIntent = Intent(context, NotificationService::class.java).apply {
+            action = ACTION_INCREMENT
+        }
+        val incrementPendingIntent = PendingIntent.getService(context, 0, incrementIntent, flag)
+
+        // Decrement Intent
+        val decrementIntent = Intent(context, NotificationService::class.java).apply {
+            action = ACTION_DECREMENT
+        }
+        val decrementPendingIntent = PendingIntent.getService(context, 0, decrementIntent, flag)
+
+
 
         // Build and update the notification
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -108,6 +127,8 @@ object Notification {
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setOngoing(true) // Keeps the notification persistent
         .addAction(R.drawable.duration, "Close", closePendingIntent)
+        .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
+        .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
         
         with(NotificationManagerCompat.from(context)) {
             notify(NOTIFICATION_ID, builder.build())
@@ -122,13 +143,29 @@ object Notification {
         }
 
         countdownTimer?.cancel()
-        countdownTimer = null
+
+        
+        
+
     }
 
-  
+    fun incrementTimer(context: Context) {
+        // communicate to the flutter side, the new time with intents
+        timeLeft += timeAugmentAmount
+        updateTimer(context, timeLeft.toString())
+    }
+
+    fun decrementTimer(context: Context) {
+        // communicate to the flutter side, the new time with intents
+        timeLeft -= timeAugmentAmount
+        updateTimer(context, timeLeft.toString())
+    }
+
     fun handleIntent(context: Context, intent: Intent?) {
         when (intent?.action) {
             "close" -> closeNotification(context)
+            "increment" -> incrementTimer(context)
+            "decrement" -> decrementTimer(context)
         }
     }
 

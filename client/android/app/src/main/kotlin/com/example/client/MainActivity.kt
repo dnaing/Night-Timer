@@ -61,7 +61,8 @@ class MainActivity: FlutterActivity() {
           duration = call.argument<String>("duration") ?: "0" // Get amount of minutes from flutter side
 
           if (Notification.isNotificationPermissionsGranted(this)) {
-            Notification.createNotification(this, duration)
+            // updateTimer starts the initial timer. each tick of this timer updates the notification appropriately
+            Notification.updateTimer(this, duration)
             result.success("Notification successfully posted")
           } else {
             Notification.requestNotificationPermissions(this)
@@ -88,7 +89,7 @@ class MainActivity: FlutterActivity() {
         // If the permission is granted, grantResults[0] will be PackageManager.PERMISSION_GRANTED
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Permission was granted, you can proceed with creating the notification
-            Notification.createNotification(this, duration)
+            Notification.updateTimer(this, duration)
             // result.success("Notification successfully posted after permissions granted")
         } else {
             // Permission was denied, handle accordingly (e.g., show a message to the user)
