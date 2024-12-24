@@ -28,7 +28,7 @@ class _CustomDialState extends State<CustomDial> {
 
   // Handles count down timer logic
   late Timer countDownTimer;
-  late Timer audioStoppingTimer;
+  late Timer? audioStoppingTimer;
   int minutesAtStart = 0;
 
   // Preset canvas sizes
@@ -83,6 +83,23 @@ class _CustomDialState extends State<CustomDial> {
   void initState() {
     super.initState();
     startEndEstimationTimer();
+
+    // Listen for messages from Android
+    platform.setMethodCallHandler((call) async {
+      if (call.method == "updateTimeLeft") {
+        final timeLeft = call.arguments["timeLeft"];
+        setState(() {
+          minutes = timeLeft;
+        });
+
+        audioStoppingTimer?.cancel();
+        // Create a new timer with the updated duration
+        audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
+
+      }
+    });
+
+
   }
 
   // Dispose method
@@ -190,17 +207,19 @@ class _CustomDialState extends State<CustomDial> {
     // Start the timer that would stop audio when completed
     audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
 
-    // Start the timer running in the foreground
-    // This is the flutter timer
-    countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        minutes -= 1;
-      });
-    });
-
     // Start timer running in the background
     // This is the android native timer
     startBackgroundTimer();
+
+    // Start the timer running in the foreground
+    // This is the flutter timer
+    // countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    //   setState(() {
+    //     minutes -= 1;
+    //   });
+    // });
+
+    
     
     // Update which buttons are active and save current minutes 
     // test comment
@@ -221,7 +240,7 @@ class _CustomDialState extends State<CustomDial> {
     HapticFeedback.heavyImpact();
 
     // Stop minute count down timer
-    countDownTimer.cancel();
+    // countDownTimer.cancel();
 
     // Close notification on android side and stopBackgroundTimer
     stopBackgroundTimer();
@@ -230,7 +249,7 @@ class _CustomDialState extends State<CustomDial> {
     startEndEstimationTimer();
 
     // Stop the timer that stops audio
-    audioStoppingTimer.cancel();
+    audioStoppingTimer?.cancel();
     
     // Update minutes back to what it was before the timer started
     // Update which buttons are active

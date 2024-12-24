@@ -27,6 +27,8 @@ import android.os.CountDownTimer
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.util.Log
+
 
 
 class MainActivity: FlutterActivity() {
@@ -45,7 +47,10 @@ class MainActivity: FlutterActivity() {
   private val CHANNEL = "com.example.client/platform_methods"
   override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
-    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+    GlobalChannel.setMethodChannel(flutterEngine, CHANNEL)
+    
+    GlobalChannel.methodChannel.setMethodCallHandler { call, result ->
+      Log.d("MethodChannel", "Method called: ${call.method}")
       when(call.method) {
 
         "stopAudio" -> {

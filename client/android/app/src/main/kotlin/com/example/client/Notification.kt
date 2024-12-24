@@ -17,13 +17,17 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import android.util.Log
 
+import io.flutter.plugin.common.MethodChannel
+import io.flutter.embedding.engine.dart.DartExecutor
+
 object Notification {
 
     private var countdownTimer: CountDownTimer? = null
     private const val CHANNEL_ID = "default_channel_id"
     private const val NOTIFICATION_ID = 1
     private var timeLeft = 0L
-    private var timeAugmentAmount = 6L
+    private var timeAugmentAmount = 5L
+    // MethodChannel channel = new MethodChannel(getFlutterEngine().getDartExecutor(), "com.example.client/platform_methods");
 
     fun createNotificationChannel(context: Context) {
 
@@ -67,15 +71,38 @@ object Notification {
 
         // Create a new CountDownTimer with the updated timeLeft
         timeLeft = duration.toLong()
+
+        // Trigger the first notification immediately
+        // buildNotification(context, timeLeft.toString())
+
+        Log.d("CountDownTimer", "HELLO FROM INSIDE UPDATETIMER")
+        val args = HashMap<String, Any>()
+
         countdownTimer = object : CountDownTimer(timeLeft * 1000L, 1000L) {
             override fun onTick(millisUntilFinished: Long) {
-                // Use millisUntilFinished instead of manually decrementing timeLeft
+                // Calculate the remaining seconds accurately
+                val secondsLeft = kotlin.math.ceil(millisUntilFinished / 1000.0).toLong()
+                timeLeft = secondsLeft
+
+                // Log raw millis and calculated seconds
+                Log.d("CountDownTimer", "millisUntilFinished: $millisUntilFinished")
+                Log.d("CountDownTimer", "Time left: $timeLeft seconds")
+
+                // Update the notification
+                buildNotification(context, timeLeft.toString())
+
+                // Send timeLeft to Flutter
+                args["timeLeft"] = timeLeft
+                GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)
+
                 
-                buildNotification(context, timeLeft.toString()) // Update the notification
-                timeLeft--
             }
 
             override fun onFinish() {
+
+                // Send timeleft to flutter
+                args["timeLeft"] = 0
+                GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)
                 // Notify completion and clear the notification
                 closeNotification(context)
                 // Stop all audio on android side if the flutter application is currently closed
@@ -157,8 +184,14 @@ object Notification {
 
     fun decrementTimer(context: Context) {
         // communicate to the flutter side, the new time with intents
+
         timeLeft -= timeAugmentAmount
+        if (timeLeft <= 0) {
+            timeLeft = 0
+        }
         updateTimer(context, timeLeft.toString())
+
+        
     }
 
     fun handleIntent(context: Context, intent: Intent?) {
