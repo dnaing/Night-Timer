@@ -119,6 +119,7 @@ object Notification {
         val ACTION_CLOSE = "close"
         val ACTION_INCREMENT = "increment"
         val ACTION_DECREMENT = "decrement"
+        val ACTION_OPEN_APP = "openApp"
 
         val flag =
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -144,6 +145,12 @@ object Notification {
         }
         val decrementPendingIntent = PendingIntent.getService(context, 0, decrementIntent, flag)
 
+        // Create an explicit intent for an Activity in your app.
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, PendingIntent.FLAG_MUTABLE)
+
 
 
         // Build and update the notification
@@ -156,6 +163,7 @@ object Notification {
         .addAction(R.drawable.duration, "Close", closePendingIntent)
         .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
         .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
+        .setContentIntent(openAppPendingIntent)
         
         with(NotificationManagerCompat.from(context)) {
             notify(NOTIFICATION_ID, builder.build())
