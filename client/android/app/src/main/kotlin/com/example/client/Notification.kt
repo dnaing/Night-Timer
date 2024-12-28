@@ -85,7 +85,7 @@ object Notification {
                 timeLeft = secondsLeft
 
                 // Log raw millis and calculated seconds
-                Log.d("CountDownTimer", "millisUntilFinished: $millisUntilFinished")
+                // Log.d("CountDownTimer", "millisUntilFinished: $millisUntilFinished")
                 Log.d("CountDownTimer", "Time left: $timeLeft seconds")
 
                 // Update the notification

@@ -28,8 +28,6 @@ class _CustomDialState extends State<CustomDial> {
   bool isEndEstimationTimerActive = false; // Add a flag
 
   // Handles count down timer logic
-  late Timer countDownTimer;
-  // late Timer? audioStoppingTimer;
   int minutesAtStart = 0;
 
   // Preset canvas sizes
@@ -53,9 +51,7 @@ class _CustomDialState extends State<CustomDial> {
   // Handles button active states
   bool refreshButtonActive = true;
   bool playButtonActive = true;
-  bool pauseButtonActive = false;
   bool stopButtonActive = false;
-  bool resumeButtonActive = false;
 
   // Custom Dial Constructor
   _CustomDialState() {
@@ -148,7 +144,6 @@ class _CustomDialState extends State<CustomDial> {
       int newTick = normalizedAngle ~/ 6;
 
       if (newTick != currentTick) {
-        // print(adjustedDialVector);
         HapticFeedback.vibrate();
         if (currentTick == 59 && newTick >= 0 && adjustedDialVector.dx >= 0) { // if dial is about to rotate around and it is clockwise
           minutes += (60 - currentTick) + newTick;
@@ -159,7 +154,6 @@ class _CustomDialState extends State<CustomDial> {
         } else {
           minutes -= currentTick - newTick; // decrement time
         }
-        // print(currentTick);
         currentTick = newTick;
       }
   }
@@ -212,34 +206,17 @@ class _CustomDialState extends State<CustomDial> {
     // Cancel the timer that shows the estimated end time so that it is now static and unchanging
     endEstimationTimer?.cancel();
 
-    // Start the timer that would stop audio when completed
-    // audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
-
     // Start timer running in the background
     // This is the android native timer
     startBackgroundTimer();
-
-    // Start the timer running in the foreground
-    // This is the flutter timer
-    // countDownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-    //   setState(() {
-    //     minutes -= 1;
-    //   });
-    // });
-
-    
-    
+  
     // Update which buttons are active and save current minutes 
-    // test comment
     setState(() {
       if (playActionType == 'Start') {
         playButtonActive = false;
         minutesAtStart = minutes;
-      } else {
-        resumeButtonActive = false;
       }
       refreshButtonActive = false;
-      pauseButtonActive = true;
       stopButtonActive = true;
     });
   }
@@ -247,38 +224,20 @@ class _CustomDialState extends State<CustomDial> {
   void stopAction() {
     HapticFeedback.heavyImpact();
 
-    // Stop minute count down timer
-    // countDownTimer.cancel();
-
     // Close notification on android side and stopBackgroundTimer
     stopBackgroundTimer();
 
     // Start a timer to update the end time estimation every second
     startEndEstimationTimer();
-
-    // Stop the timer that stops audio
-    // audioStoppingTimer?.cancel();
-    
+ 
     // Update minutes back to what it was before the timer started
     // Update which buttons are active
     setState(() {
       minutes = minutesAtStart;
       refreshButtonActive = true;
       playButtonActive = true;
-      pauseButtonActive = false;
       stopButtonActive = false;
-      resumeButtonActive = false;
     });
-  }
-
-  void stopAudio() async {
-    // Stop all audio playing on android device
-    try {
-      await platform.invokeMethod('stopAudio');
-    } on PlatformException catch (e) {
-      print('Failed to stop audio: ${e.message}.');
-    }
-    stopAction();
   }
 
   Future<void> startBackgroundTimer() async {
