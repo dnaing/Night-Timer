@@ -95,6 +95,12 @@ class _CustomDialState extends State<CustomDial> {
             stopAction();
           }
         });
+      } else if (call.method == "updateEndEstimation") {
+
+        print("updateendestimation platform call was made");
+
+        updateEndTime();
+
       }
     });
 
@@ -159,10 +165,14 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void updateEndTime() {
-    print("inside of end time function");
+    
     DateTime newTime = curTime.add(Duration(minutes: minutes));
+    print("inside of end time function");
+    print(minutes.toString());
+
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(newTime);
+    print(formattedTime);
   }
 
   void startEndEstimationTimer() {

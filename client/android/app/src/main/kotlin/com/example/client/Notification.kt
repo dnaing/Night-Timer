@@ -178,16 +178,21 @@ object Notification {
         }
 
         countdownTimer?.cancel()
+    }
 
-        
-        
-
+    fun updateEndEstimation() {
+        val args = HashMap<String, Any>()
+        GlobalChannel.methodChannel.invokeMethod("updateEndEstimation", args)
     }
 
     fun incrementTimer(context: Context) {
         // communicate to the flutter side, the new time with intents
         timeLeft += timeAugmentAmount
         updateTimer(context, timeLeft.toString())
+
+        // Now that the timer minutes have been altered, we want to also adjust the end estimation time
+        updateEndEstimation()
+
     }
 
     fun decrementTimer(context: Context) {
@@ -198,6 +203,9 @@ object Notification {
             timeLeft = 0
         }
         updateTimer(context, timeLeft.toString())
+
+        // Now that the timer minutes have been altered, we want to also adjust the end estimation time
+        updateEndEstimation()
 
         
     }
