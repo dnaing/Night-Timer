@@ -24,11 +24,12 @@ class _CustomDialState extends State<CustomDial> {
   // Handles all date time logic
   DateTime curTime = DateTime.now();
   late String formattedTime;
-  Timer endEstimationTimer = Timer(Duration.zero, () {});
+  Timer? endEstimationTimer; // Nullable to track whether it's been started
+  bool isEndEstimationTimerActive = false; // Add a flag
 
   // Handles count down timer logic
   late Timer countDownTimer;
-  late Timer? audioStoppingTimer;
+  // late Timer? audioStoppingTimer;
   int minutesAtStart = 0;
 
   // Preset canvas sizes
@@ -81,24 +82,25 @@ class _CustomDialState extends State<CustomDial> {
   // Whenever time passes in real life, the change is reflected in here.
   @override
   void initState() {
-    super.initState();
-    startEndEstimationTimer();
 
+    super.initState();
+
+    if (!isEndEstimationTimerActive) {
+      startEndEstimationTimer();
+    }
+    
     // Listen for messages from Android
     platform.setMethodCallHandler((call) async {
       if (call.method == "updateTimeLeft") {
         final timeLeft = call.arguments["timeLeft"];
         setState(() {
           minutes = timeLeft;
+          if (minutes == 0) {
+            stopAction();
+          }
         });
-
-        audioStoppingTimer?.cancel();
-        // Create a new timer with the updated duration
-        audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
-
       }
     });
-
 
   }
 
@@ -163,15 +165,20 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void updateEndTime() {
+    print("inside of end time function");
     DateTime newTime = curTime.add(Duration(minutes: minutes));
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(newTime);
   }
 
   void startEndEstimationTimer() {
-    if (!endEstimationTimer.isActive) {
+    print("End estimation timer started");
+    if (!isEndEstimationTimerActive) {
+      isEndEstimationTimerActive = true;
       // Start a timer to update the end time estimation every second
       endEstimationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+
+        
         // Check if the current time has changed
         DateTime now = DateTime.now();
         if (now != curTime) {
@@ -181,6 +188,7 @@ class _CustomDialState extends State<CustomDial> {
           });
         }
       });
+
     }
   }
 
@@ -202,10 +210,10 @@ class _CustomDialState extends State<CustomDial> {
     HapticFeedback.heavyImpact();
 
     // Cancel the timer that shows the estimated end time so that it is now static and unchanging
-    endEstimationTimer.cancel();
+    endEstimationTimer?.cancel();
 
     // Start the timer that would stop audio when completed
-    audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
+    // audioStoppingTimer = Timer(Duration(seconds: minutes), stopAudio);
 
     // Start timer running in the background
     // This is the android native timer
@@ -249,7 +257,7 @@ class _CustomDialState extends State<CustomDial> {
     startEndEstimationTimer();
 
     // Stop the timer that stops audio
-    audioStoppingTimer?.cancel();
+    // audioStoppingTimer?.cancel();
     
     // Update minutes back to what it was before the timer started
     // Update which buttons are active
