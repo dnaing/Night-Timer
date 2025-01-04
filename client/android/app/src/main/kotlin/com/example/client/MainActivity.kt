@@ -1,7 +1,7 @@
 package com.example.client
 
 import com.example.client.Audio
-import com.example.client.Notification
+import com.example.client.NotificationController
 
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
@@ -39,7 +39,7 @@ class MainActivity: FlutterActivity() {
     super.onCreate(savedInstanceState)
 
     // Notification channel is created when the app is started
-    Notification.createNotificationChannel(this)
+    NotificationController.createNotificationChannel(this)
   }
 
   // This function sets up the method channels that the Flutter application will be calling
@@ -65,17 +65,17 @@ class MainActivity: FlutterActivity() {
         "startBackgroundTimer" -> {
           duration = call.argument<String>("duration") ?: "0" // Get amount of minutes from flutter side
 
-          if (Notification.isNotificationPermissionsGranted(this)) {
+          if (NotificationController.isNotificationPermissionsGranted(this)) {
             // updateTimer starts the initial timer. each tick of this timer updates the notification appropriately
-            Notification.updateTimer(this, duration)
+            NotificationController.updateTimer(this, duration)
             result.success("Notification successfully posted")
           } else {
-            Notification.requestNotificationPermissions(this)
+            NotificationController.requestNotificationPermissions(this)
           }
         }
 
         "stopBackgroundTimer" -> {
-          Notification.closeNotification(this)
+          NotificationController.closeNotification(this)
         }
 
         else -> {
@@ -94,7 +94,7 @@ class MainActivity: FlutterActivity() {
         // If the permission is granted, grantResults[0] will be PackageManager.PERMISSION_GRANTED
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             // Permission was granted, you can proceed with creating the notification
-            Notification.updateTimer(this, duration)
+            NotificationController.updateTimer(this, duration)
             // result.success("Notification successfully posted after permissions granted")
         } else {
             // Permission was denied, handle accordingly (e.g., show a message to the user)

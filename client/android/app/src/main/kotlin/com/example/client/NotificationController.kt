@@ -20,7 +20,7 @@ import android.util.Log
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.embedding.engine.dart.DartExecutor
 
-object Notification {
+object NotificationController {
 
     private var countdownTimer: CountDownTimer? = null
     private const val CHANNEL_ID = "default_channel_id"

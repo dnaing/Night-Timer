@@ -1,6 +1,6 @@
 package com.example.client
 
-import com.example.client.Notification
+import com.example.client.NotificationController
 import android.app.Service
 import android.os.IBinder
 import android.content.Intent
@@ -8,7 +8,7 @@ import android.content.Intent
 
 class NotificationService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Notification.handleIntent(this, intent)
+        NotificationController.handleIntent(this, intent)
         return START_NOT_STICKY
     }
 
