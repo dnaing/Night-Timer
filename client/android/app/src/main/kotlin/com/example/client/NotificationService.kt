@@ -47,6 +47,18 @@ class NotificationService : Service() {
                 closeNotification()
             }
 
+            "INCREMENT_TIMER" -> {
+
+                incrementTimer()
+
+            }
+
+            "DECREMENT_TIMER" -> {
+
+                decrementTimer()
+
+            }
+
         }
 
         // NotificationController.handleIntent(this, intent)
@@ -87,10 +99,6 @@ class NotificationService : Service() {
 
             override fun onFinish() {
 
-                // Send timeleft to flutter
-                // args["timeLeft"] = 0
-                // GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)
-
                 // Cancel timer and then close the notification
                 cancelTimer()
                 closeNotification()
@@ -106,42 +114,40 @@ class NotificationService : Service() {
 
     private fun buildNotification(duration: String) {
 
-        // val ACTION_CLOSE = "close"
-        // val ACTION_INCREMENT = "increment"
-        // val ACTION_DECREMENT = "decrement"
-        // val ACTION_OPEN_APP = "openApp"
+        val ACTION_CLOSE = "STOP_TIMER"
+        val ACTION_INCREMENT = "INCREMENT_TIMER"
+        val ACTION_DECREMENT = "DECREMENT_TIMER"
 
-        // val flag =
-        //   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-        //       PendingIntent.FLAG_IMMUTABLE
-        //   else
-        //       0
+
+        val flag =
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+              PendingIntent.FLAG_IMMUTABLE
+          else
+              0
 
         // // Close Intent
-        // val closeIntent = Intent(context, NotificationService::class.java).apply {
-        //   action = ACTION_CLOSE
-        // }
-        // val closePendingIntent = PendingIntent.getService(context, 0, closeIntent, flag)
+        val closeIntent = Intent(this, NotificationService::class.java).apply {
+          action = ACTION_CLOSE
+        }
+        val closePendingIntent = PendingIntent.getService(this, 0, closeIntent, flag)
 
         // // Increment Intent
-        // val incrementIntent = Intent(context, NotificationService::class.java).apply {
-        //     action = ACTION_INCREMENT
-        // }
-        // val incrementPendingIntent = PendingIntent.getService(context, 0, incrementIntent, flag)
+        val incrementIntent = Intent(this, NotificationService::class.java).apply {
+            action = ACTION_INCREMENT
+        }
+        val incrementPendingIntent = PendingIntent.getService(this, 0, incrementIntent, flag)
 
         // // Decrement Intent
-        // val decrementIntent = Intent(context, NotificationService::class.java).apply {
-        //     action = ACTION_DECREMENT
-        // }
-        // val decrementPendingIntent = PendingIntent.getService(context, 0, decrementIntent, flag)
+        val decrementIntent = Intent(this, NotificationService::class.java).apply {
+            action = ACTION_DECREMENT
+        }
+        val decrementPendingIntent = PendingIntent.getService(this, 0, decrementIntent, flag)
 
         // // Create an explicit intent for an Activity in your app.
-        // val openAppIntent = Intent(context, MainActivity::class.java).apply {
-        //     flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-        // }
-        // val openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, PendingIntent.FLAG_MUTABLE)
-
-
+        val openAppIntent = Intent(applicationContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(applicationContext, 0, openAppIntent, PendingIntent.FLAG_MUTABLE)
 
         // Build and update the notification
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
@@ -150,15 +156,11 @@ class NotificationService : Service() {
         .setContentText("$duration seconds remaining")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setOngoing(true) // Keeps the notification persistent
-        // .addAction(R.drawable.duration, "Close", closePendingIntent)
-        // .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
-        // .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
-        // .setContentIntent(openAppPendingIntent)
+        .addAction(R.drawable.duration, "Close", closePendingIntent)
+        .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
+        .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
+        .setContentIntent(openAppPendingIntent)
         
-        // with(NotificationManagerCompat.from(context)) {
-        //     notify(NOTIFICATION_ID, builder.build())
-        // }
-
         startForeground(NOTIFICATION_ID, builder.build())
     }
 
@@ -171,6 +173,35 @@ class NotificationService : Service() {
         GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)
         countdownTimer?.cancel()
     }
+
+    fun updateEndEstimation() {
+        val args = HashMap<String, Any>()
+        GlobalChannel.methodChannel.invokeMethod("updateEndEstimation", args)
+    }
+
+    fun incrementTimer() {
+        // communicate to the flutter side, the new time with intents
+        timeLeft += timeAugmentAmount
+        updateTimer(timeLeft)
+
+        // Now that the timer minutes have been altered, we want to also adjust the end estimation time
+        updateEndEstimation()
+
+    }
+
+    fun decrementTimer() {
+        // communicate to the flutter side, the new time with intents
+
+        timeLeft -= timeAugmentAmount
+        if (timeLeft <= 0) {
+            timeLeft = 0
+        }
+        updateTimer(timeLeft)
+
+        // Now that the timer minutes have been altered, we want to also adjust the end estimation time
+        updateEndEstimation()
+    }
+
 
     fun closeNotification() {
         
