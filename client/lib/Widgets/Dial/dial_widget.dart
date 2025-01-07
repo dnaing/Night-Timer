@@ -92,12 +92,12 @@ class _CustomDialState extends State<CustomDial> {
         setState(() {
           minutes = timeLeft;
           if (minutes == 0) {
-            stopAction();
+            stopAction(false);
           }
         });
       } else if (call.method == "updateEndEstimation") {
 
-        print("updateendestimation platform call was made");
+        // print("updateendestimation platform call was made");
 
         updateEndTime();
 
@@ -167,12 +167,12 @@ class _CustomDialState extends State<CustomDial> {
   void updateEndTime() {
     
     DateTime newTime = curTime.add(Duration(minutes: minutes));
-    print("inside of end time function");
-    print(minutes.toString());
+    // print("inside of end time function");
+    // print(minutes.toString());
 
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(newTime);
-    print(formattedTime);
+    // print(formattedTime);
   }
 
   void startEndEstimationTimer() {
@@ -231,12 +231,18 @@ class _CustomDialState extends State<CustomDial> {
     });
   }
 
-  void stopAction() {
+  void stopAction(bool invokeNativeMethod) {
+    print("STOP ACTION HIT ON FLUTTER SIDEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
     HapticFeedback.heavyImpact();
 
-    // Close notification on android side and stopBackgroundTimer
-    stopBackgroundTimer();
-
+    // If flag is true, that means that this method was enabled by hitting the stop button on flutter side
+    // In this case we want to invoke the stopBackgroundTimer method on the android side and reset states
+    // If the flag is false, that means that the timer is already stopped and notification cancelled
+    // In this case, we only want to reset our states
+    if (invokeNativeMethod) {
+      stopBackgroundTimer();
+    }
+    
     // Start a timer to update the end time estimation every second
     startEndEstimationTimer();
  
@@ -318,7 +324,7 @@ class _CustomDialState extends State<CustomDial> {
                 child: AnimatedOpacity(
                   opacity: playButtonActive ? 0.0 : 1.0,
                   duration: const Duration(milliseconds: 250),
-                  child: DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: stopAction, buttonActive: stopButtonActive),
+                  child: DialButton(buttonSize: 75, icon: Ionicons.stop_circle, buttonAction: () => stopAction(true), buttonActive: stopButtonActive),
                 ),
               ),
             ]      

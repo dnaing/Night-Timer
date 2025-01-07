@@ -27,13 +27,15 @@ import android.os.CountDownTimer
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.app.Service
 import android.util.Log
 
 
 
 class MainActivity: FlutterActivity() {
 
-  private lateinit var duration: String
+  private var duration: Long = 0L
+
 
   override fun onCreate(savedInstanceState: android.os.Bundle?) {
     super.onCreate(savedInstanceState)
@@ -63,19 +65,33 @@ class MainActivity: FlutterActivity() {
         }
 
         "startBackgroundTimer" -> {
-          duration = call.argument<String>("duration") ?: "0" // Get amount of minutes from flutter side
+          duration = call.argument<String>("duration")?.toLong() ?: 0L // Get amount of minutes from flutter side if it exists but default to 0 if not
 
           if (NotificationController.isNotificationPermissionsGranted(this)) {
-            // updateTimer starts the initial timer. each tick of this timer updates the notification appropriately
-            NotificationController.updateTimer(this, duration)
-            result.success("Notification successfully posted")
+
+            // Permissions are granted so we send an intent to update the timer
+            val intent = Intent(this, NotificationService::class.java).apply{
+              action = "START_TIMER"
+              putExtra("duration", duration)
+            }
+            startForegroundService(intent)
+            result.success("Timer has been started")
+
           } else {
+            // Permissions not granted
             NotificationController.requestNotificationPermissions(this)
+            result.error("PERMISSION_DENIED", "Notification permissions were not granted", null)
           }
         }
 
         "stopBackgroundTimer" -> {
-          NotificationController.closeNotification(this)
+          // Notification should be closed
+          val intent = Intent(this, NotificationService::class.java).apply{
+            action = "STOP_TIMER"
+          }
+          startService(intent)
+          result.success("Timer stopped and notification closed")
+          
         }
 
         else -> {
@@ -93,13 +109,19 @@ class MainActivity: FlutterActivity() {
     if (requestCode == 1) {
         // If the permission is granted, grantResults[0] will be PackageManager.PERMISSION_GRANTED
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
             // Permission was granted, you can proceed with creating the notification
-            NotificationController.updateTimer(this, duration)
-            // result.success("Notification successfully posted after permissions granted")
+            // but use an intent
+            val intent = Intent(this, NotificationService::class.java).apply{
+              action = "START_TIMER"
+              putExtra("duration", duration)
+            }
+            startForegroundService(intent)
+
         } else {
             // Permission was denied, handle accordingly (e.g., show a message to the user)
             Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
-            // result.error("PERMISSION_DENIED", "Notification permissions denied", null)
+
         }
 
     }
