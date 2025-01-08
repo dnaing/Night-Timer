@@ -106,7 +106,7 @@ class DialPainter extends CustomPainter {
       if (playButtonActive) {
         // Draw the dial outline
         myPaint = Paint()
-          ..color = Colors.white
+          ..color = Colors.grey
           ..style = PaintingStyle.stroke
           ..strokeWidth = 7;
         canvas.drawCircle(

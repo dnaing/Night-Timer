@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dial_button.dart';
 import 'dial_painter.dart';
@@ -75,16 +76,12 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
-  // Whenever time passes in real life, the change is reflected in here.
   @override
   void initState() {
 
     super.initState();
+    appInitState();
 
-    if (!isEndEstimationTimerActive) {
-      startEndEstimationTimer();
-    }
-    
     // Listen for messages from Android
     platform.setMethodCallHandler((call) async {
       if (call.method == "updateTimeLeft") {
@@ -96,11 +93,7 @@ class _CustomDialState extends State<CustomDial> {
           }
         });
       } else if (call.method == "updateEndEstimation") {
-
-        // print("updateendestimation platform call was made");
-
         updateEndTime();
-
       }
     });
 
@@ -110,6 +103,22 @@ class _CustomDialState extends State<CustomDial> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> appInitState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isTimerRunning = prefs.getBool('isTimerRunning') ?? false;
+
+    if (isTimerRunning) {
+      setState(() {
+        playButtonActive = false;
+        refreshButtonActive = false;
+        stopButtonActive = true;
+      });
+      // Optionally, restore minutesAtStart if needed
+    } else {
+      startEndEstimationTimer();
+    }
   }
 
   bool isWithinDialDot(Offset localPosition) {
@@ -209,26 +218,33 @@ class _CustomDialState extends State<CustomDial> {
 
   }
 
-  Future<void> playAction(String playActionType) async {
+  Future<void> saveTimerState(bool isTimerRunning) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isTimerRunning', isTimerRunning);
+  }
+
+  Future<void> playAction() async {
 
     HapticFeedback.heavyImpact();
 
-    // Cancel the timer that shows the estimated end time so that it is now static and unchanging
-    endEstimationTimer?.cancel();
+    if (minutes > 0) {
+      // Cancel the timer that shows the estimated end time so that it is now static and unchanging
+      endEstimationTimer?.cancel();
 
-    // Start timer running in the background
-    // This is the android native timer
-    startBackgroundTimer();
-  
-    // Update which buttons are active and save current minutes 
-    setState(() {
-      if (playActionType == 'Start') {
+      // Start timer running in the background
+      // This is the android native timer
+      startBackgroundTimer();
+      saveTimerState(true); // Save the timer as running
+    
+      // Update which buttons are active and save current minutes 
+      setState(() {
         playButtonActive = false;
         minutesAtStart = minutes;
-      }
-      refreshButtonActive = false;
-      stopButtonActive = true;
-    });
+        refreshButtonActive = false;
+        stopButtonActive = true;
+      });
+    }
+
   }
 
   void stopAction(bool invokeNativeMethod) {
@@ -242,6 +258,8 @@ class _CustomDialState extends State<CustomDial> {
     if (invokeNativeMethod) {
       stopBackgroundTimer();
     }
+
+    saveTimerState(false); // Save the timer as being stopped
     
     // Start a timer to update the end time estimation every second
     startEndEstimationTimer();
@@ -316,7 +334,7 @@ class _CustomDialState extends State<CustomDial> {
                 child: AnimatedOpacity(
                   opacity: playButtonActive ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 250),
-                  child: DialButton(buttonSize: 75, icon: Ionicons.play_circle, buttonAction: () => playAction('Start'), buttonActive: playButtonActive),
+                  child: DialButton(buttonSize: 75, icon: Ionicons.play_circle, buttonAction: () => playAction(), buttonActive: playButtonActive),
                 ),
               ),
               IgnorePointer(

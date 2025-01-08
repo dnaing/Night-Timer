@@ -38,6 +38,8 @@ dependencies:
   ionicons: ^0.2.2
   audioplayers: ^6.0.0
 
+  shared_preferences: ^2.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
