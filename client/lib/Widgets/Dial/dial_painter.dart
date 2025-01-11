@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'dart:async';
+
 
 class DialPainterMain extends StatefulWidget {
   final int minutes;
@@ -32,6 +34,7 @@ class _DialPainterMainState extends State<DialPainterMain> with SingleTickerProv
 
   late AnimationController _controller;
   late Animation<Color?> _colorAnimation;
+  List<double> paintedAngles = []; // Store angles that are painted
 
   @override
   void initState() {
@@ -60,7 +63,7 @@ class _DialPainterMainState extends State<DialPainterMain> with SingleTickerProv
       animation: _colorAnimation,
       builder: (context, child) {
         return CustomPaint(
-          painter: DialPainter(widget.minutes, widget.dialDotCenterX, widget.dialDotCenterY, widget.clockIncrements, widget.formattedTime, widget.playButtonActive, _colorAnimation),
+          painter: DialPainter(widget.minutes, widget.dialDotCenterX, widget.dialDotCenterY, widget.clockIncrements, widget.formattedTime, widget.playButtonActive, _colorAnimation, paintedAngles),
           size: Size(widget.canvasWidth, widget.canvasHeight),
         );
       }
@@ -81,6 +84,10 @@ class DialPainter extends CustomPainter {
 
   Animation<Color?> colorAnimation;
 
+  List<double> paintedAngles;
+
+  
+
   DialPainter(
     this.minutes, 
     this.dialDotCenterX, 
@@ -89,7 +96,20 @@ class DialPainter extends CustomPainter {
     this.formattedTime, 
     this.playButtonActive,
     this.colorAnimation,
+    this.paintedAngles
   );
+
+  List<double> getIntermediateAnglesInRadians(double currentAngleInRadians, double lastAngleInRadians) {
+
+    List<double> intermediateAngles = [];
+    
+    if (currentAngleInRadians > lastAngleInRadians) {
+      for (double angle = lastAngleInRadians; angle < currentAngleInRadians; angle += 0.05) {
+        intermediateAngles.add(angle % (2*pi));
+      }
+    }
+    return intermediateAngles;
+  }
   
 
   @override
@@ -97,6 +117,8 @@ class DialPainter extends CustomPainter {
 
       final dialCenter = Offset(size.width / 2, size.height / 2); // Center of dial
       final radius = min(size.width, size.height) / 2.5; // Radius of dial
+      
+      const double dialDotRadius = 18;
 
       Offset dialDotCenter = Offset(dialDotCenterX, dialDotCenterY);
       Paint myPaint;
@@ -104,7 +126,8 @@ class DialPainter extends CustomPainter {
       Offset textOffset;
   
       if (playButtonActive) {
-        // Draw the dial outline
+
+        // Draws the grey dial base outline
         myPaint = Paint()
           ..color = Colors.grey
           ..style = PaintingStyle.stroke
@@ -115,6 +138,39 @@ class DialPainter extends CustomPainter {
           myPaint
         );
 
+        // Define white paint for the painted regions
+        myPaint = Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 7;
+        
+        // Draw the painted regions with white paint
+        for (double angle in paintedAngles) {
+          double adjustedAngle = (angle - pi / 2) % (2 * pi);
+          canvas.drawArc(
+            Rect.fromCircle(center : dialCenter, radius : radius),
+            adjustedAngle,
+            0.1,
+            false,
+            myPaint
+          );
+        }
+
+        // Add current paintedAngle to our list of paintedAngles
+        double currentAngleInRadians = (atan2(dialDotCenterY - dialCenter.dy, dialDotCenterX - dialCenter.dx) + 2 * pi) % (2 * pi); // gets angle of dial dot in radians
+        currentAngleInRadians = (currentAngleInRadians + pi / 2) % (2 * pi);
+        // print(currentAngleInRadians);
+
+        if (!paintedAngles.contains(currentAngleInRadians)) {
+          paintedAngles.add(currentAngleInRadians);
+        }
+
+        double lastAngleInRadians = paintedAngles.last;
+        if (currentAngleInRadians != lastAngleInRadians) {
+          paintedAngles.addAll(getIntermediateAnglesInRadians(currentAngleInRadians, lastAngleInRadians));
+        }
+        
+
         // Draw the dial controller dot
         myPaint = Paint()
           ..color = Colors.white
@@ -122,9 +178,12 @@ class DialPainter extends CustomPainter {
           ..strokeWidth = 5;
         canvas.drawCircle(
           dialDotCenter,
-          18,
+          dialDotRadius,
           myPaint
         );
+
+        
+        
 
         // Add tick marks to the dial
         for (final increment in clockIncrements) {
@@ -171,7 +230,7 @@ class DialPainter extends CustomPainter {
       textOffset = Offset(dialCenter.dx - textPainter.width / 2, dialCenter.dy - textPainter.height / 2);
       textPainter.paint(canvas, textOffset);
 
-      // Draw 'minute' text inside the dial
+      // Draw 'minutes' text inside the dial
       textPainter = TextPainter(
         text: TextSpan(
           text: 'MINUTES',
@@ -188,7 +247,7 @@ class DialPainter extends CustomPainter {
       textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 1.5 - textPainter.height / 2);
       textPainter.paint(canvas, textOffset);
     }
-  
+
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
