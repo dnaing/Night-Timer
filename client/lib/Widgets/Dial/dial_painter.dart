@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-import 'dart:async';
+// import 'dart:async';
 
 
 class DialPainterMain extends StatefulWidget {
@@ -129,7 +129,7 @@ class DialPainter extends CustomPainter {
 
         // Draws the grey dial base outline
         myPaint = Paint()
-          ..color = Colors.grey
+          ..color = const Color.fromARGB(255, 60, 60, 60)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 7;
         canvas.drawCircle(
@@ -202,15 +202,16 @@ class DialPainter extends CustomPainter {
           text: formattedTime,
           style: TextStyle(
             color: playButtonActive ? Colors.white : colorAnimation.value,
-            fontSize: 40,
+            fontSize: 45,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Tempter',
           ),
         ),
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 3.2 - textPainter.height / 2);
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 3.2 - textPainter.height / 2 - 15.0);
       textPainter.paint(canvas, textOffset);
 
       // Draw dial minute value text inside the dial
@@ -219,15 +220,16 @@ class DialPainter extends CustomPainter {
           text: minutes.toString(),
           style: TextStyle(
             color: playButtonActive ? Colors.white : colorAnimation.value,
-            fontSize: 80,
+            fontSize: 160,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Tempter',
           ),
         ),
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      textOffset = Offset(dialCenter.dx - textPainter.width / 2, dialCenter.dy - textPainter.height / 2);
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, dialCenter.dy - textPainter.height / 2 + 3.0);
       textPainter.paint(canvas, textOffset);
 
       // Draw 'minutes' text inside the dial
@@ -236,15 +238,16 @@ class DialPainter extends CustomPainter {
           text: 'MINUTES',
           style: TextStyle(
             color: playButtonActive ? Colors.white : colorAnimation.value,
-            fontSize: 40,
+            fontSize: 45,
             fontWeight: FontWeight.bold,
+            fontFamily: 'Tempter',
           ),
         ),
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
       textPainter.layout();
-      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 1.5 - textPainter.height / 2);
+      textOffset = Offset(dialCenter.dx - textPainter.width / 2, size.height / 1.5 - textPainter.height / 2  + 28.0);
       textPainter.paint(canvas, textOffset);
     }
 
