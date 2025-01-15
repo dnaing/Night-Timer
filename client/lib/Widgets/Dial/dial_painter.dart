@@ -144,31 +144,55 @@ class DialPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 7;
         
-        // Draw the painted regions with white paint
-        for (double angle in paintedAngles) {
-          double adjustedAngle = (angle - pi / 2) % (2 * pi);
+        // If
+        if (minutes >= 60) {
+          canvas.drawCircle(
+            dialCenter, 
+            radius, 
+            myPaint
+          );
+        } else {
+
+          double paintedAngle = minutes * (pi / 30);
           canvas.drawArc(
-            Rect.fromCircle(center : dialCenter, radius : radius),
-            adjustedAngle,
-            0.1,
+            Rect.fromCircle(center: dialCenter, radius: radius),
+            -pi/2,
+            paintedAngle,
             false,
             myPaint
           );
-        }
 
-        // Add current paintedAngle to our list of paintedAngles
-        double currentAngleInRadians = (atan2(dialDotCenterY - dialCenter.dy, dialDotCenterX - dialCenter.dx) + 2 * pi) % (2 * pi); // gets angle of dial dot in radians
-        currentAngleInRadians = (currentAngleInRadians + pi / 2) % (2 * pi);
-        // print(currentAngleInRadians);
-
-        if (!paintedAngles.contains(currentAngleInRadians)) {
-          paintedAngles.add(currentAngleInRadians);
         }
+        
+        
+        // // Draw the painted regions with white paint
+        // for (double angle in paintedAngles) {
+        //   double adjustedAngle = (angle - pi / 2) % (2 * pi);
+        //   canvas.drawArc(
+        //     Rect.fromCircle(center : dialCenter, radius : radius),
+        //     adjustedAngle,
+        //     0.1,
+        //     false,
+        //     myPaint
+        //   );
+        // }
 
-        double lastAngleInRadians = paintedAngles.last;
-        if (currentAngleInRadians != lastAngleInRadians) {
-          paintedAngles.addAll(getIntermediateAnglesInRadians(currentAngleInRadians, lastAngleInRadians));
-        }
+        // // Add current paintedAngle to our list of paintedAngles
+        // double currentAngleInRadians = (atan2(dialDotCenterY - dialCenter.dy, dialDotCenterX - dialCenter.dx) + 2 * pi) % (2 * pi); // gets angle of dial dot in radians
+        // currentAngleInRadians = (currentAngleInRadians + pi / 2) % (2 * pi);
+        // // print(currentAngleInRadians);
+
+        // if (!paintedAngles.contains(currentAngleInRadians)) {
+        //   paintedAngles.add(currentAngleInRadians);
+        // }
+
+        // double lastAngleInRadians = paintedAngles.last;
+        // if (currentAngleInRadians != lastAngleInRadians) {
+        //   paintedAngles.addAll(getIntermediateAnglesInRadians(currentAngleInRadians, lastAngleInRadians));
+        // }
+
+        // New game plan
+        // print(minutes);
         
 
         // Draw the dial controller dot
