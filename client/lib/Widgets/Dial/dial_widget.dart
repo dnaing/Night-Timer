@@ -45,6 +45,7 @@ class _CustomDialState extends State<CustomDial> {
 
   // Used only if tick marks are to be displayed on the dial
   Set<List<double>> clockIncrements = {};
+  bool displayTickMarks = false;
 
   // Handles native android audiomanager platform
   static const platform = MethodChannel('com.example.client/platform_methods');
@@ -67,12 +68,12 @@ class _CustomDialState extends State<CustomDial> {
   
     // Will use this later for adding tick marks to the dial
     // Leave commented for now
-    // double angle = 0;
-    // for (int i = 0; i < 60; i++) {
-    //   List<double> curIncrement = [200 + (dialRadius * cos(angle * (pi / 180))), 200 + (dialRadius * sin(angle * (pi / 180)))];
-    //   clockIncrements.add(curIncrement);
-    //   angle += 6;
-    // }
+    double angle = 0;
+    for (int i = 0; i < 60; i++) {
+      List<double> curIncrement = [200 + (dialRadius * cos(angle * (pi / 180))), 200 + (dialRadius * sin(angle * (pi / 180)))];
+      clockIncrements.add(curIncrement);
+      angle += 6;
+    }
 
   }
 
@@ -320,7 +321,7 @@ class _CustomDialState extends State<CustomDial> {
                   updateDialDot(details);
                 }   
               },
-              child: DialPainterMain(minutes: minutes, dialDotCenterX: dialDotCenterX, dialDotCenterY: dialDotCenterY, clockIncrements: clockIncrements, formattedTime: formattedTime, playButtonActive: playButtonActive, canvasHeight: canvasHeight, canvasWidth: canvasWidth)
+              child: DialPainterMain(minutes: minutes, dialDotCenterX: dialDotCenterX, dialDotCenterY: dialDotCenterY, clockIncrements: clockIncrements, formattedTime: formattedTime, playButtonActive: playButtonActive, canvasHeight: canvasHeight, canvasWidth: canvasWidth, displayTickMarks: displayTickMarks)
             ),
           ),
         ),
