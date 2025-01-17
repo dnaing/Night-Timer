@@ -25,8 +25,8 @@ class _CustomDialState extends State<CustomDial> {
   // Handles all date time logic
   DateTime curTime = DateTime.now();
   late String formattedTime;
-  Timer? endEstimationTimer; // Nullable to track whether it's been started
-  bool isEndEstimationTimerActive = false; // Add a flag
+  Timer? endEstimationTimer; 
+  bool isEndEstimationTimerActive = false; 
 
   // Handles count down timer logic
   int minutesAtStart = 0;
@@ -47,7 +47,7 @@ class _CustomDialState extends State<CustomDial> {
   Set<List<double>> clockIncrements = {};
   bool displayTickMarks = false;
 
-  // Handles native android audiomanager platform
+  // Handles native android platform
   static const platform = MethodChannel('com.example.client/platform_methods');
 
   // Handles button active states
@@ -62,12 +62,10 @@ class _CustomDialState extends State<CustomDial> {
     dialDotCenterY = (canvasHeight / 2) - dialRadius;
     dialDotRadius *= 10;
 
-    // DateTime newTime = curTime.add(Duration(minutes: 170));
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(curTime);
   
-    // Will use this later for adding tick marks to the dial
-    // Leave commented for now
+    // adding tick marks to the dial
     double angle = 0;
     for (int i = 0; i < 60; i++) {
       List<double> curIncrement = [200 + (dialRadius * cos(angle * (pi / 180))), 200 + (dialRadius * sin(angle * (pi / 180)))];
@@ -116,7 +114,7 @@ class _CustomDialState extends State<CustomDial> {
         refreshButtonActive = false;
         stopButtonActive = true;
       });
-      // Optionally, restore minutesAtStart if needed
+
     } else {
       startEndEstimationTimer();
     }
@@ -174,15 +172,10 @@ class _CustomDialState extends State<CustomDial> {
       }
   }
 
-  void updateEndTime() {
-    
+  void updateEndTime() {  
     DateTime newTime = curTime.add(Duration(minutes: minutes));
-    // print("inside of end time function");
-    // print(minutes.toString());
-
     intl.DateFormat formatter = intl.DateFormat('jm');
     formattedTime = formatter.format(newTime);
-    // print(formattedTime);
   }
 
   void startEndEstimationTimer() {
@@ -191,8 +184,7 @@ class _CustomDialState extends State<CustomDial> {
       isEndEstimationTimerActive = true;
       // Start a timer to update the end time estimation every second
       endEstimationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-
-        
+ 
         // Check if the current time has changed
         DateTime now = DateTime.now();
         if (now != curTime) {
@@ -249,7 +241,6 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void stopAction(bool invokeNativeMethod) {
-    print("STOP ACTION HIT ON FLUTTER SIDEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
     HapticFeedback.heavyImpact();
 
     // If flag is true, that means that this method was enabled by hitting the stop button on flutter side

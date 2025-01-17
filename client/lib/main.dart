@@ -11,9 +11,9 @@ void initializeSettings() async {
   if (Settings.containsKey('key-time-ticks') == false) {
     Settings.setValue<bool>('key-time-ticks', false);
   }
-  // if (Settings.containsKey('key-time-steps') == false) {
-  //   Settings.setValue<double>('key-time-steps', 5.0);
-  // }
+  if (Settings.containsKey('key-time-steps') == false) {
+    Settings.setValue<double>('key-time-steps', 5.0);
+  }
   if (Settings.containsKey('key-vibrate') == false) {
     Settings.setValue<bool>('key-vibrate', true);
   }

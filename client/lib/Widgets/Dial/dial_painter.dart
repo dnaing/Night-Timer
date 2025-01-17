@@ -46,7 +46,7 @@ class _DialPainterMainState extends State<DialPainterMain> with SingleTickerProv
 
     _colorAnimation = (ColorTween(
       begin: Colors.white,
-      end: Colors.blue,
+      end: const Color.fromARGB(255, 30, 135, 220),
     ).animate(_controller));
   }
 
