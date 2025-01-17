@@ -1,3 +1,4 @@
+import 'package:client/Pages/settings_page.dart';
 import 'package:flutter/material.dart';
 import '../Widgets/Dial/dial_widget.dart';
 import 'package:flutter/services.dart';
@@ -34,11 +35,18 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(
           widget.title,
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            color: Colors.white,
+            onPressed: navigateSettingsPage
+          ),
+        ],
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: SafeArea(
@@ -52,4 +60,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+
+  void navigateSettingsPage() {
+    // Navigate to the settings page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MySettingsPage(title: "Settings")),
+    );
+  }
+
 }
