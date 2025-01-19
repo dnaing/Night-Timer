@@ -1,3 +1,4 @@
+import 'package:client/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
@@ -85,8 +86,8 @@ class _MySettingsPageState extends State<MySettingsPage> {
                   title: 'Enable Vibrations',
                   activeColor: Colors.white,
                   onChange: (value) {
-                    Settings.setValue('key-vibrate', value);
-                    
+                    // Settings.setValue('key-vibrate', value);/
+                    settingsState.toggleVibration(value);
                   },
 
                 ),

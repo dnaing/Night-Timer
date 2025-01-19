@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'package:client/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter/services.dart';
-import 'package:flutter_settings_screens/flutter_settings_screens.dart';
+// import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -84,9 +85,7 @@ class _CustomDialState extends State<CustomDial> {
 
     super.initState();
     appInitState();
-    vibrationActive = Settings.getValue('key-vibrate');
-    print('=================================');
-    print(vibrationActive);
+    settingsState.addListener(_onStateChanged);
 
     // Listen for messages from Android
     platform.setMethodCallHandler((call) async {
@@ -108,7 +107,12 @@ class _CustomDialState extends State<CustomDial> {
   // Dispose method
   @override
   void dispose() {
+    settingsState.removeListener(_onStateChanged);
     super.dispose();
+  }
+
+  void _onStateChanged() {
+    setState(() {});
   }
 
   Future<void> appInitState() async {
@@ -166,7 +170,7 @@ class _CustomDialState extends State<CustomDial> {
 
       if (newTick != currentTick) {
 
-        if (vibrationActive == true) {
+        if (settingsState.isVibrationEnabled == true) {
           HapticFeedback.vibrate();
         }
         
@@ -212,7 +216,9 @@ class _CustomDialState extends State<CustomDial> {
 
   void refreshAction() {
 
-    HapticFeedback.heavyImpact();
+    if (settingsState.isVibrationEnabled == true) {
+      HapticFeedback.vibrate();
+    }
     setState(() {
       dialDotCenterX = canvasWidth / 2;
       dialDotCenterY = (canvasHeight / 2) - dialRadius;
@@ -230,7 +236,9 @@ class _CustomDialState extends State<CustomDial> {
 
   Future<void> playAction() async {
 
-    HapticFeedback.heavyImpact();
+    if (settingsState.isVibrationEnabled == true) {
+      HapticFeedback.vibrate();
+    }
 
     if (minutes > 0) {
       // Cancel the timer that shows the estimated end time so that it is now static and unchanging
@@ -253,7 +261,9 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void stopAction(bool invokeNativeMethod) {
-    HapticFeedback.heavyImpact();
+    if (settingsState.isVibrationEnabled == true) {
+      HapticFeedback.vibrate();
+    }
 
     // If flag is true, that means that this method was enabled by hitting the stop button on flutter side
     // In this case we want to invoke the stopBackgroundTimer method on the android side and reset states
