@@ -1,6 +1,6 @@
 import 'package:client/settings_state.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui';
+// import 'dart:ui';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 class MySettingsPage extends StatefulWidget {
@@ -33,8 +33,8 @@ class _MySettingsPageState extends State<MySettingsPage> {
         child: ListView(
           padding: const EdgeInsets.all(24),
             children: <Widget>[
-            const SettingsGroup(
-              titleTextStyle: TextStyle(
+            SettingsGroup(
+              titleTextStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white
               ),
@@ -42,9 +42,12 @@ class _MySettingsPageState extends State<MySettingsPage> {
               children: [
                 SwitchSettingsTile(
                   settingKey: 'key-time-ticks',
-                  leading: Icon(Icons.align_vertical_bottom, color: Colors.white),
+                  leading: const Icon(Icons.align_vertical_bottom, color: Colors.white),
                   title: 'Enable Dial Time Ticks',
                   activeColor: Colors.white,
+                  onChange: (value) {
+                    settingsState.toggleTimeTicks(value);
+                  },
                 )
               ]
             ),

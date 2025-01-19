@@ -60,6 +60,7 @@ class _CustomDialState extends State<CustomDial> {
   // Handle settings
   bool? vibrationActive = true;
 
+
   // Custom Dial Constructor
   _CustomDialState() {
     dialRadius = min(canvasWidth, canvasHeight) / 2.5; // 160
@@ -335,7 +336,7 @@ class _CustomDialState extends State<CustomDial> {
                   updateDialDot(details);
                 }   
               },
-              child: DialPainterMain(minutes: minutes, dialDotCenterX: dialDotCenterX, dialDotCenterY: dialDotCenterY, clockIncrements: clockIncrements, formattedTime: formattedTime, playButtonActive: playButtonActive, canvasHeight: canvasHeight, canvasWidth: canvasWidth, displayTickMarks: displayTickMarks)
+              child: DialPainterMain(minutes: minutes, dialDotCenterX: dialDotCenterX, dialDotCenterY: dialDotCenterY, clockIncrements: clockIncrements, formattedTime: formattedTime, playButtonActive: playButtonActive, canvasHeight: canvasHeight, canvasWidth: canvasWidth, displayTickMarks: settingsState.isTimeTickEnabled)
             ),
           ),
         ),

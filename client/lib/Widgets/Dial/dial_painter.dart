@@ -10,7 +10,7 @@ class DialPainterMain extends StatefulWidget {
   final bool playButtonActive;
   final double canvasWidth;
   final double canvasHeight;
-  final bool displayTickMarks;
+  final bool? displayTickMarks;
 
   const DialPainterMain({
     super.key,
@@ -84,7 +84,7 @@ class DialPainter extends CustomPainter {
   Animation<Color?> colorAnimation;
 
   List<double> paintedAngles;
-  bool displayTickMarks;
+  bool? displayTickMarks;
 
   DialPainter(
     this.minutes, 
@@ -120,7 +120,7 @@ class DialPainter extends CustomPainter {
 
   void drawTimeTicks(Canvas canvas, Offset dialCenter ) {
 
-    if (displayTickMarks) {
+    if (displayTickMarks == true) {
 
       Paint myPaint;
       // Add tick marks to the dial
