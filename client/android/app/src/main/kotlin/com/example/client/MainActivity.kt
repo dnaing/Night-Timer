@@ -91,7 +91,17 @@ class MainActivity: FlutterActivity() {
           }
           startService(intent)
           result.success("Timer stopped and notification closed")
-          
+        }
+
+        "modifyTimeSteps" -> {
+          // Modify the time step amount
+          val timeStepAmount = call.argument<Double>("timeStepAmount")?.toLong() ?: 5L // Get amount of minutes from flutter side if it exists but default to 0 if not
+          val intent = Intent(this, NotificationService::class.java).apply{
+            action = "MODIFY_TIME_STEPS"
+            putExtra("timeStepAmount", timeStepAmount)
+          }
+          startService(intent)
+          result.success("Time step amount successfully modified")
         }
 
         else -> {

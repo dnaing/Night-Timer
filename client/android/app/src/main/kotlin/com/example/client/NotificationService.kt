@@ -48,15 +48,17 @@ class NotificationService : Service() {
             }
 
             "INCREMENT_TIMER" -> {
-
                 incrementTimer()
-
             }
 
             "DECREMENT_TIMER" -> {
-
                 decrementTimer()
+            }
 
+            "MODIFY_TIME_STEPS" -> {
+                val timeStepAmount = intent.getLongExtra("timeStepAmount", 5L)
+                // Log.d("MODIFY_TIME_STEPS", "WE MADE IT IN AND ALSO THE TIME STEP AMOUNT IS " + timeStepAmount.toString())
+                modifyTimeSteps(timeStepAmount)
             }
 
         }
@@ -177,6 +179,10 @@ class NotificationService : Service() {
     fun updateEndEstimation() {
         val args = HashMap<String, Any>()
         GlobalChannel.methodChannel.invokeMethod("updateEndEstimation", args)
+    }
+
+    fun modifyTimeSteps(value: Long) {
+        timeAugmentAmount = value
     }
 
     fun incrementTimer() {

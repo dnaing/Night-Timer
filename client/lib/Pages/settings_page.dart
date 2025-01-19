@@ -14,8 +14,6 @@ class MySettingsPage extends StatefulWidget {
 
 class _MySettingsPageState extends State<MySettingsPage> {
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,16 +59,17 @@ class _MySettingsPageState extends State<MySettingsPage> {
               children: [
                 SliderSettingsTile(
                   title: 'Adjust Dial Time Modification',
-                  settingKey: 'key-slider-volume',
-                  defaultValue: 5,
-                  min: 0,
-                  max: 60,
-                  step: 1,
+                  settingKey: 'key-time-steps',
+                  defaultValue: 5.0,
+                  min: 0.0,
+                  max: 60.0,
+                  step: 1.0,
+                  decimalPrecision: 0,
                   leading: const Icon(Icons.more_time, color: Colors.white),
                   onChange: (value) {
-                    // Set the state of the dial modification time
-                    // debugPrint('key-slider-volume: $value');
+                    settingsState.setTimeSteps(value);
                   },
+                  
                   
                 )
               ]

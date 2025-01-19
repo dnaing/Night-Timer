@@ -57,10 +57,6 @@ class _CustomDialState extends State<CustomDial> {
   bool playButtonActive = true;
   bool stopButtonActive = false;
 
-  // Handle settings
-  bool? vibrationActive = true;
-
-
   // Custom Dial Constructor
   _CustomDialState() {
     dialRadius = min(canvasWidth, canvasHeight) / 2.5; // 160
@@ -113,6 +109,14 @@ class _CustomDialState extends State<CustomDial> {
   }
 
   void _onStateChanged() {
+    // If it was the time steps that were changed, send a platform call to modify that on the android side
+    if (settingsState.lastChangedSetting == 'key-time-steps') {
+      // Send a platform call to android side to change the time step amount
+      modifyTimeSteps();
+      settingsState.resetLastChangedSettings();
+    }
+
+    // Update the App UI to reflect setting changes
     setState(() {});
   }
 
@@ -304,6 +308,14 @@ class _CustomDialState extends State<CustomDial> {
       await platform.invokeMethod('stopBackgroundTimer');
     } on PlatformException catch(e) {
       print('Failed to stop background timer: ${e.message}.');
+    }
+  }
+
+  Future<void> modifyTimeSteps() async {
+    try {
+      await platform.invokeMethod('modifyTimeSteps', {'timeStepAmount' : settingsState.timeSteps});
+    } on PlatformException catch(e) {
+      print('Failed to modify time steps: ${e.message}.');
     }
   }
 

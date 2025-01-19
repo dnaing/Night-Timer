@@ -3,8 +3,6 @@ import 'ColorThemes/themes.dart';
 import 'Pages/home_page.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
-
-
 // Initialize Settings
 void initializeSettings() async {
   await Settings.init();
@@ -18,7 +16,6 @@ void initializeSettings() async {
     Settings.setValue<bool>('key-vibrate', true);
   }
 }
-
 
 void main() async {
   initializeSettings();
@@ -37,7 +34,4 @@ class MyApp extends StatelessWidget {
       home: const MyHomePage(title: 'Night Timer'),
     );
   }
-
-
-
 }
