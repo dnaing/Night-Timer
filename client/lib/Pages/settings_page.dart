@@ -72,8 +72,8 @@ class _MySettingsPageState extends State<MySettingsPage> {
               ]
             ),
             const SizedBox(height: 32),
-            const SettingsGroup(
-              titleTextStyle: TextStyle(
+            SettingsGroup(
+              titleTextStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white
               ),
@@ -81,9 +81,13 @@ class _MySettingsPageState extends State<MySettingsPage> {
               children: [
                 SwitchSettingsTile(
                   settingKey: 'key-vibrate',
-                  leading: Icon(Icons.vibration, color: Colors.white),
+                  leading: const Icon(Icons.vibration, color: Colors.white),
                   title: 'Enable Vibrations',
                   activeColor: Colors.white,
+                  onChange: (value) {
+                    Settings.setValue('key-vibrate', value);
+                    
+                  },
 
                 ),
               ]

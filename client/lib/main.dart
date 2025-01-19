@@ -17,10 +17,6 @@ void initializeSettings() async {
   if (Settings.containsKey('key-vibrate') == false) {
     Settings.setValue<bool>('key-vibrate', true);
   }
-  // print(Settings.getValue('key-time-ticks'));
-  // if (Settings.containsKey('key-fade-audio') == false) {
-  //   Settings.setValue<int>('key-fade-audio', 30);
-  // }
 }
 
 

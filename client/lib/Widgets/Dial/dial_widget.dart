@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter/services.dart';
+import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -55,6 +56,9 @@ class _CustomDialState extends State<CustomDial> {
   bool playButtonActive = true;
   bool stopButtonActive = false;
 
+  // Handle settings
+  bool? vibrationActive = true;
+
   // Custom Dial Constructor
   _CustomDialState() {
     dialRadius = min(canvasWidth, canvasHeight) / 2.5; // 160
@@ -80,6 +84,9 @@ class _CustomDialState extends State<CustomDial> {
 
     super.initState();
     appInitState();
+    vibrationActive = Settings.getValue('key-vibrate');
+    print('=================================');
+    print(vibrationActive);
 
     // Listen for messages from Android
     platform.setMethodCallHandler((call) async {
@@ -158,7 +165,11 @@ class _CustomDialState extends State<CustomDial> {
       int newTick = normalizedAngle ~/ 6;
 
       if (newTick != currentTick) {
-        HapticFeedback.vibrate();
+
+        if (vibrationActive == true) {
+          HapticFeedback.vibrate();
+        }
+        
         if (currentTick == 59 && newTick >= 0 && adjustedDialVector.dx >= 0) { // if dial is about to rotate around and it is clockwise
           minutes += (60 - currentTick) + newTick;
         } else if (currentTick == 0 && newTick <= 59 && adjustedDialVector.dx <= 0) { // if dial is about to rotate and it is counterclockwise
@@ -181,6 +192,7 @@ class _CustomDialState extends State<CustomDial> {
   void startEndEstimationTimer() {
     print("End estimation timer started");
     if (!isEndEstimationTimerActive) {
+      print("End estimation timer is actually being started");
       isEndEstimationTimerActive = true;
       // Start a timer to update the end time estimation every second
       endEstimationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -252,6 +264,7 @@ class _CustomDialState extends State<CustomDial> {
     }
 
     saveTimerState(false); // Save the timer as being stopped
+    isEndEstimationTimerActive = false;
     
     // Start a timer to update the end time estimation every second
     startEndEstimationTimer();
