@@ -117,8 +117,9 @@ class MainActivity: FlutterActivity() {
 
     // Check if the requestCode matches the one you used in requestPermissions()
     if (requestCode == 1) {
+
         // If the permission is granted, grantResults[0] will be PackageManager.PERMISSION_GRANTED
-        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
 
             // Permission was granted, you can proceed with creating the notification
             // but use an intent

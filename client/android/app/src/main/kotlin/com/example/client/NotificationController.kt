@@ -52,7 +52,7 @@ object NotificationController {
     fun requestNotificationPermissions(activity: MainActivity) {
         ActivityCompat.requestPermissions(
             activity,
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS, Manifest.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK),
             1   // request code
         )
     }

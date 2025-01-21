@@ -149,17 +149,16 @@ class NotificationService : Service() {
 
         // Build and update the notification
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-        .setSmallIcon(R.drawable.duration) // Replace with your app's icon
-        // .setContentTitle(notificationTitle)
-        .setContentText(notificationText)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setOngoing(true) // Keeps the notification persistent
-        .setOnlyAlertOnce(true) // Prevents sound/vibration for updates
-        .addAction(R.drawable.duration, "Close", closePendingIntent)
-        .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
-        .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
-        .setContentIntent(openAppPendingIntent)
-        startForeground(NOTIFICATION_ID, builder.build())
+            .setSmallIcon(R.drawable.duration) // Replace with your app's icon
+            .setContentText(notificationText)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setOngoing(true) // Keeps the notification persistent
+            .setOnlyAlertOnce(true) // Prevents sound/vibration for updates
+            .addAction(R.drawable.duration, "Close", closePendingIntent)
+            .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
+            .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
+            .setContentIntent(openAppPendingIntent)
+        startForeground(NOTIFICATION_ID, builder.build(), 2)
     }
 
     fun cancelTimer() {
