@@ -79,15 +79,15 @@ class NotificationService : Service() {
         // Log.d("CountDownTimer", "HELLO FROM INSIDE UPDATETIMER")
         val args = HashMap<String, Any>()
 
-        countdownTimer = object : CountDownTimer(timeLeft * 1000L, 1000L) {
+        countdownTimer = object : CountDownTimer(timeLeft * 1000L * 60L, 60000L) {
             override fun onTick(millisUntilFinished: Long) {
                 // Calculate the remaining seconds accurately
-                val secondsLeft = kotlin.math.ceil(millisUntilFinished / 1000.0).toLong()
-                timeLeft = secondsLeft
+                val minutesLeft = kotlin.math.ceil(millisUntilFinished / 60000.0).toLong()
+                timeLeft = minutesLeft
 
                 // Log raw millis and calculated seconds
                 // Log.d("CountDownTimer", "millisUntilFinished: $millisUntilFinished")
-                Log.d("CountDownTimer", "Time left: $timeLeft seconds")
+                Log.d("CountDownTimer", "Time left: $timeLeft minutes")
 
                 // Update the notification
                 buildNotification(timeLeft.toString())
@@ -95,8 +95,7 @@ class NotificationService : Service() {
                 // Send timeLeft to Flutter
                 args["timeLeft"] = timeLeft
                 GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)
-
-                
+   
             }
 
             override fun onFinish() {
@@ -151,18 +150,23 @@ class NotificationService : Service() {
         }
         val openAppPendingIntent = PendingIntent.getActivity(applicationContext, 0, openAppIntent, PendingIntent.FLAG_MUTABLE)
 
+        var notificationText = "$duration minutes remaining"
+        if (duration == "1") {
+            notificationText = "$duration minute remaining"
+        }
+
         // Build and update the notification
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
         .setSmallIcon(R.drawable.duration) // Replace with your app's icon
         // .setContentTitle(notificationTitle)
-        .setContentText("$duration seconds remaining")
+        .setContentText(notificationText)
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setOngoing(true) // Keeps the notification persistent
+        .setOnlyAlertOnce(true) // Prevents sound/vibration for updates
         .addAction(R.drawable.duration, "Close", closePendingIntent)
         .addAction(R.drawable.duration, "Increment", incrementPendingIntent)
         .addAction(R.drawable.duration, "Decrement", decrementPendingIntent)
         .setContentIntent(openAppPendingIntent)
-        
         startForeground(NOTIFICATION_ID, builder.build())
     }
 
