@@ -22,12 +22,7 @@ import io.flutter.embedding.engine.dart.DartExecutor
 
 object NotificationController {
 
-    // private var countdownTimer: CountDownTimer? = null
     private const val CHANNEL_ID = "DEFAULT_CHANNEL_ID"
-    // private const val NOTIFICATION_ID = 1
-    // private var timeLeft = 0L
-    // private var timeAugmentAmount = 5L
-    // MethodChannel channel = new MethodChannel(getFlutterEngine().getDartExecutor(), "com.example.client/platform_methods");
 
     fun createNotificationChannel(context: Context) {
 
@@ -35,8 +30,6 @@ object NotificationController {
         // the NotificationChannel class is not in the Support Library.
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // val name = getString(R.string.channel_name)
-            // val descriptionText = getString(R.string.channel_description)
             val name = "Default Channel"
             val descriptionText = "This channel is used for notifications."
             val importance = NotificationManager.IMPORTANCE_DEFAULT

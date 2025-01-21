@@ -36,13 +36,11 @@ class NotificationService : Service() {
         when(intent?.action) {
 
             "START_TIMER" -> {
-                Log.d("STARTTIMER", "WE ARE IN THE START TIMER METHOD CALL")
                 val duration = intent.getLongExtra("duration", 0L)
                 updateTimer(duration)
             }
 
             "STOP_TIMER" -> {
-                Log.d("STOPTIMER", "WE ARE IN THE STOP TIMER METHOD CALL")
                 cancelTimer()
                 closeNotification()
             }
@@ -57,7 +55,6 @@ class NotificationService : Service() {
 
             "MODIFY_TIME_STEPS" -> {
                 val timeStepAmount = intent.getLongExtra("timeStepAmount", 5L)
-                // Log.d("MODIFY_TIME_STEPS", "WE MADE IT IN AND ALSO THE TIME STEP AMOUNT IS " + timeStepAmount.toString())
                 modifyTimeSteps(timeStepAmount)
             }
 
@@ -76,7 +73,6 @@ class NotificationService : Service() {
         // Create a new CountDownTimer with the updated timeLeft
         timeLeft = duration
 
-        // Log.d("CountDownTimer", "HELLO FROM INSIDE UPDATETIMER")
         val args = HashMap<String, Any>()
 
         countdownTimer = object : CountDownTimer(timeLeft * 1000L * 60L, 60000L) {
@@ -84,10 +80,6 @@ class NotificationService : Service() {
                 // Calculate the remaining seconds accurately
                 val minutesLeft = kotlin.math.ceil(millisUntilFinished / 60000.0).toLong()
                 timeLeft = minutesLeft
-
-                // Log raw millis and calculated seconds
-                // Log.d("CountDownTimer", "millisUntilFinished: $millisUntilFinished")
-                Log.d("CountDownTimer", "Time left: $timeLeft minutes")
 
                 // Update the notification
                 buildNotification(timeLeft.toString())
@@ -171,9 +163,6 @@ class NotificationService : Service() {
     }
 
     fun cancelTimer() {
-
-        Log.d("CANCELTIMER", "WE ARE IN THE CANCEL TIMER METHOD CALL")
-
         val args = HashMap<String, Any>()
         args["timeLeft"] = 0
         GlobalChannel.methodChannel.invokeMethod("updateTimeLeft", args)

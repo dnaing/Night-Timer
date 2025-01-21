@@ -3,7 +3,6 @@ import 'package:client/settings_state.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:flutter/services.dart';
-// import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:ionicons/ionicons.dart';
 import 'package:shared_preferences/shared_preferences.dart';

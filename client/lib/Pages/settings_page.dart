@@ -1,6 +1,5 @@
 import 'package:client/settings_state.dart';
 import 'package:flutter/material.dart';
-// import 'dart:ui';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 class MySettingsPage extends StatefulWidget {

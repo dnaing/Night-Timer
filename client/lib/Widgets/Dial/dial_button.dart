@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:ionicons/ionicons.dart';
-// import 'dial_painter.dart';
 
 class DialButton extends StatefulWidget {
 
@@ -35,9 +33,6 @@ class _DialButtonState extends State<DialButton> {
         onPressed: widget.buttonActive ? widget.buttonAction : null,
       ),
     );
-
-
-
 
   }
 }

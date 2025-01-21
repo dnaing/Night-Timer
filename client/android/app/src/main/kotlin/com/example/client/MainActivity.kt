@@ -52,7 +52,7 @@ class MainActivity: FlutterActivity() {
     GlobalChannel.setMethodChannel(flutterEngine, CHANNEL)
     
     GlobalChannel.methodChannel.setMethodCallHandler { call, result ->
-      Log.d("MethodChannel", "Method called: ${call.method}")
+
       when(call.method) {
 
         "stopAudio" -> {

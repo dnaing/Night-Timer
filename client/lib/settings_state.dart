@@ -22,10 +22,7 @@ class SettingsState extends ChangeNotifier {
     // Fetch the value asynchronously and update the state
     _isVibrationEnabled = Settings.getValue<bool>('key-vibrate'); // Provide a default value
     _isTimeTicksEnabled = Settings.getValue<bool>('key-time-ticks');
-    // print("ABOUT TO GET THE TIMESTEP SETTING INITIAL VALUE");
-    // print(Settings.getValue<double>('key-time-steps'));
     _timeSteps = Settings.getValue<double>('key-time-steps');
-    // print("TIME STEPS HAVE BEEN OBTAINED AND IT IS $_timeSteps");
     notifyListeners(); // Notify listeners once the value is loaded
   }
 
@@ -53,7 +50,6 @@ class SettingsState extends ChangeNotifier {
   void resetLastChangedSettings() {
     _lastChangedSetting = null;
   }
-
 
 }
 
