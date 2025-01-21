@@ -12,9 +12,9 @@ In order to see how this can be useful, imagine this scenario. You are someone w
 
 **Night Timer helps resolve all three of these issues**
 
-1. No more sounds would be player after the timer has completed, lowering the risk that you may be woken up
+1. No more sounds would be played after the timer has completed, lowering the risk that you may be woken up
 2. Your device would no longer be spending battery wastefully on playing whatever audio source you had open
 3. You would have a better idea of where you were in your video or podcast, because it would be within the time limit that you had set
 
 ## Usage
-Unfortunately this application is not publicly available on the Google Play Store and there are no future plans to do so at this time. However, this app will be usable via local installation
+Unfortunately this application is not publicly available on the Google Play Store and there are no future plans to do so at this time. However, this app will still be usable via local installation
