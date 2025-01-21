@@ -42,6 +42,7 @@ class _MySettingsPageState extends State<MySettingsPage> {
                   leading: const Icon(Icons.align_vertical_bottom, color: Colors.white),
                   title: 'Enable Dial Time Ticks',
                   activeColor: Colors.white,
+                  defaultValue: false,
                   onChange: (value) {
                     settingsState.toggleTimeTicks(value);
                   },
@@ -86,8 +87,8 @@ class _MySettingsPageState extends State<MySettingsPage> {
                   leading: const Icon(Icons.vibration, color: Colors.white),
                   title: 'Enable Vibrations',
                   activeColor: Colors.white,
+                  defaultValue: true,
                   onChange: (value) {
-                    // Settings.setValue('key-vibrate', value);/
                     settingsState.toggleVibration(value);
                   },
 

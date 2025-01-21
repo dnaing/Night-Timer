@@ -4,21 +4,12 @@ import 'Pages/home_page.dart';
 import 'package:flutter_settings_screens/flutter_settings_screens.dart';
 
 // Initialize Settings
-void initializeSettings() async {
-  await Settings.init();
-  if (Settings.containsKey('key-time-ticks') == false) {
-    Settings.setValue<bool>('key-time-ticks', false);
-  }
-  if (Settings.containsKey('key-time-steps') == false) {
-    Settings.setValue<double>('key-time-steps', 5.0);
-  }
-  if (Settings.containsKey('key-vibrate') == false) {
-    Settings.setValue<bool>('key-vibrate', true);
-  }
-}
+// Future<void> initializeSettings() async {
+//   await Settings.init();
+// }
 
 void main() async {
-  initializeSettings();
+  await Settings.init();
   runApp(const MyApp());
 }
 
